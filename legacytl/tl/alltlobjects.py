@@ -102,7 +102,9 @@ tlobjects = {
     0x4d8a0299: types.BotInfo,
     0xe8a775b0: types.bots.BotInfo,
     0x17db940b: types.BotInlineMediaResult,
-    0x764cf810: types.BotInlineMessageMediaAuto,
+    
+    0xa617e7b: types.BotInlineMessageRichMessage,
+    0xb43df56c: types.InputBotInlineMessageRichMessage,0x764cf810: types.BotInlineMessageMediaAuto,
     0x18d1cdc2: types.BotInlineMessageMediaContact,
     0x051846fd: types.BotInlineMessageMediaGeo,
     0x354a9b09: types.BotInlineMessageMediaInvoice,
@@ -2174,3 +2176,4 @@ tlobjects = {
     0x0c94511c: types.WebViewMessageSent,
     0x4d22ff98: types.WebViewResultUrl,
 }
+tlobjects[0xbaf39d8b] = types.RichMessage

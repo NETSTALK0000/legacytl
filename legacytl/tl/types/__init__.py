@@ -2075,6 +2075,44 @@ class BotInlineMessageMediaWebPage(TLObject):
         return cls(message=_message, url=_url, invert_media=_invert_media, force_large_media=_force_large_media, force_small_media=_force_small_media, manual=_manual, safe=_safe, entities=_entities, reply_markup=_reply_markup)
 
 
+
+class BotInlineMessageRichMessage(TLObject):
+    __slots__ = ['reply_markup', 'rich_message']
+    CONSTRUCTOR_ID = 0xa617e7b
+    SUBCLASS_OF_ID = 0xc9d3389f
+
+    def __init__(self, rich_message, reply_markup=None):
+        self.rich_message = rich_message
+        self.reply_markup = reply_markup
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+        reply_markup = reader.tgread_object() if flags & (1 << 2) else None
+        rich_message = reader.tgread_object()
+        return cls(rich_message=rich_message, reply_markup=reply_markup)
+    def to_dict(self, recursive=True):
+        return {
+            '_': 'BotInlineMessageRichMessage',
+            'reply_markup': self.reply_markup,
+            'rich_message': self.rich_message,
+        }
+class InputBotInlineMessageRichMessage(TLObject):
+    __slots__ = ['reply_markup', 'rich_message']
+    CONSTRUCTOR_ID = 0xb43df56c
+    SUBCLASS_OF_ID = 0xbac8b6f2
+
+    def __init__(self, rich_message, reply_markup=None):
+        self.rich_message = rich_message
+        self.reply_markup = reply_markup
+
+    def to_dict(self, recursive=True):
+        return {
+            '_': 'InputBotInlineMessageRichMessage',
+            'reply_markup': self.reply_markup,
+            'rich_message': self.rich_message,
+        }
+
 class BotInlineMessageText(TLObject):
     CONSTRUCTOR_ID = 0x8c7f65e2
     SUBCLASS_OF_ID = 0xc4910f88
@@ -45329,3 +45367,37 @@ TypeWebPage = Union[WebPageEmpty,WebPagePending,WebPage,WebPageNotModified]
 TypeWebPageAttribute = Union[WebPageAttributeTheme,WebPageAttributeStory,WebPageAttributeStickerSet,WebPageAttributeUniqueStarGift]
 TypeWebViewMessageSent = WebViewMessageSent
 TypeWebViewResult = WebViewResultUrl
+
+
+class RichMessage(TLObject):
+    __slots__ = ['rtl', 'part', 'blocks', 'photos', 'documents']
+    CONSTRUCTOR_ID = 0xbaf39d8b
+    SUBCLASS_OF_ID = None
+
+    def __init__(self, blocks, photos, documents, rtl=None, part=None):
+        self.blocks = blocks
+        self.photos = photos
+        self.documents = documents
+        self.rtl = rtl
+        self.part = part
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+        rtl = bool(flags & 1)
+        part = bool(flags & 2)
+        blocks = reader.tgread_vector()
+        photos = reader.tgread_vector()
+        documents = reader.tgread_vector()
+        return cls(blocks, photos, documents, rtl, part)
+
+    def to_dict(self, recursive=True):
+        return {
+            '_': 'RichMessage',
+            'rtl': self.rtl,
+            'part': self.part,
+            'blocks': self.blocks,
+            'photos': self.photos,
+            'documents': self.documents,
+        }
+
