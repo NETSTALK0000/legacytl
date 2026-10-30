@@ -23,6 +23,13 @@ class AccessPointRule(TLObject):
         self.dc_id = dc_id
         self.ips = ips
 
+        self.from_rank = from_rank
+        self.guestchat_via_from = guestchat_via_from
+        self.suggested_post = suggested_post
+        self.schedule_repeat_period = schedule_repeat_period
+        self.summary_from_language = summary_from_language
+        self.rich_message = rich_message
+
     def to_dict(self):
         return {
             '_': 'AccessPointRule',
@@ -2075,43 +2082,6 @@ class BotInlineMessageMediaWebPage(TLObject):
         return cls(message=_message, url=_url, invert_media=_invert_media, force_large_media=_force_large_media, force_small_media=_force_small_media, manual=_manual, safe=_safe, entities=_entities, reply_markup=_reply_markup)
 
 
-
-class BotInlineMessageRichMessage(TLObject):
-    __slots__ = ['reply_markup', 'rich_message']
-    CONSTRUCTOR_ID = 0xa617e7b
-    SUBCLASS_OF_ID = 0xc9d3389f
-
-    def __init__(self, rich_message, reply_markup=None):
-        self.rich_message = rich_message
-        self.reply_markup = reply_markup
-
-    @classmethod
-    def from_reader(cls, reader):
-        flags = reader.read_int()
-        reply_markup = reader.tgread_object() if flags & (1 << 2) else None
-        rich_message = reader.tgread_object()
-        return cls(rich_message=rich_message, reply_markup=reply_markup)
-    def to_dict(self, recursive=True):
-        return {
-            '_': 'BotInlineMessageRichMessage',
-            'reply_markup': self.reply_markup,
-            'rich_message': self.rich_message,
-        }
-class InputBotInlineMessageRichMessage(TLObject):
-    __slots__ = ['reply_markup', 'rich_message']
-    CONSTRUCTOR_ID = 0xb43df56c
-    SUBCLASS_OF_ID = 0xbac8b6f2
-
-    def __init__(self, rich_message, reply_markup=None):
-        self.rich_message = rich_message
-        self.reply_markup = reply_markup
-
-    def to_dict(self, recursive=True):
-        return {
-            '_': 'InputBotInlineMessageRichMessage',
-            'reply_markup': self.reply_markup,
-            'rich_message': self.rich_message,
-        }
 
 class BotInlineMessageText(TLObject):
     CONSTRUCTOR_ID = 0x8c7f65e2
@@ -20619,7 +20589,7 @@ class Message(TLObject):
     CONSTRUCTOR_ID = 0xeabcdd4d
     SUBCLASS_OF_ID = 0x790009e3
 
-    def __init__(self, id: int, peer_id: 'TypePeer', date: Optional[datetime], message: str, out: Optional[bool]=None, mentioned: Optional[bool]=None, media_unread: Optional[bool]=None, silent: Optional[bool]=None, post: Optional[bool]=None, from_scheduled: Optional[bool]=None, legacy: Optional[bool]=None, edit_hide: Optional[bool]=None, pinned: Optional[bool]=None, noforwards: Optional[bool]=None, invert_media: Optional[bool]=None, offline: Optional[bool]=None, video_processing_pending: Optional[bool]=None, from_id: Optional['TypePeer']=None, from_boosts_applied: Optional[int]=None, saved_peer_id: Optional['TypePeer']=None, fwd_from: Optional['TypeMessageFwdHeader']=None, via_bot_id: Optional[int]=None, via_business_bot_id: Optional[int]=None, reply_to: Optional['TypeMessageReplyHeader']=None, media: Optional['TypeMessageMedia']=None, reply_markup: Optional['TypeReplyMarkup']=None, entities: Optional[List['TypeMessageEntity']]=None, views: Optional[int]=None, forwards: Optional[int]=None, replies: Optional['TypeMessageReplies']=None, edit_date: Optional[datetime]=None, post_author: Optional[str]=None, grouped_id: Optional[int]=None, reactions: Optional['TypeMessageReactions']=None, restriction_reason: Optional[List['TypeRestrictionReason']]=None, ttl_period: Optional[int]=None, quick_reply_shortcut_id: Optional[int]=None, effect: Optional[int]=None, factcheck: Optional['TypeFactCheck']=None, report_delivery_until_date: Optional[datetime]=None, paid_message_stars: Optional[int]=None):
+    def __init__(self, id: int, peer_id: 'TypePeer', date: Optional[datetime], message: str, out: Optional[bool]=None, mentioned: Optional[bool]=None, media_unread: Optional[bool]=None, silent: Optional[bool]=None, post: Optional[bool]=None, from_scheduled: Optional[bool]=None, legacy: Optional[bool]=None, edit_hide: Optional[bool]=None, pinned: Optional[bool]=None, noforwards: Optional[bool]=None, invert_media: Optional[bool]=None, offline: Optional[bool]=None, video_processing_pending: Optional[bool]=None, from_id: Optional['TypePeer']=None, from_boosts_applied: Optional[int]=None, saved_peer_id: Optional['TypePeer']=None, fwd_from: Optional['TypeMessageFwdHeader']=None, via_bot_id: Optional[int]=None, via_business_bot_id: Optional[int]=None, reply_to: Optional['TypeMessageReplyHeader']=None, media: Optional['TypeMessageMedia']=None, reply_markup: Optional['TypeReplyMarkup']=None, entities: Optional[List['TypeMessageEntity']]=None, views: Optional[int]=None, forwards: Optional[int]=None, replies: Optional['TypeMessageReplies']=None, edit_date: Optional[datetime]=None, post_author: Optional[str]=None, grouped_id: Optional[int]=None, reactions: Optional['TypeMessageReactions']=None, restriction_reason: Optional[List['TypeRestrictionReason']]=None, ttl_period: Optional[int]=None, quick_reply_shortcut_id: Optional[int]=None, effect: Optional[int]=None, factcheck: Optional['TypeFactCheck']=None, report_delivery_until_date: Optional[datetime]=None, paid_message_stars: Optional[int]=None, rich_message: Optional['TypeRichMessage']=None, from_rank=None, guestchat_via_from=None, suggested_post=None, schedule_repeat_period=None, summary_from_language=None):
         """
         Constructor for Message: Instance of either MessageEmpty, Message, MessageService.
         """
@@ -20664,6 +20634,8 @@ class Message(TLObject):
         self.factcheck = factcheck
         self.report_delivery_until_date = report_delivery_until_date
         self.paid_message_stars = paid_message_stars
+
+        self.rich_message = rich_message
 
     def to_dict(self):
         return {
@@ -20876,6 +20848,8 @@ class Message(TLObject):
             _paid_message_stars = reader.read_long()
         else:
             _paid_message_stars = None
+        import logging as _lg
+        _lg.getLogger('rich_dbg').warning(f'FLAGS2={flags2} bit13={bool(flags2 & 8192)}')
         return cls(id=_id, peer_id=_peer_id, date=_date, message=_message, out=_out, mentioned=_mentioned, media_unread=_media_unread, silent=_silent, post=_post, from_scheduled=_from_scheduled, legacy=_legacy, edit_hide=_edit_hide, pinned=_pinned, noforwards=_noforwards, invert_media=_invert_media, offline=_offline, video_processing_pending=_video_processing_pending, from_id=_from_id, from_boosts_applied=_from_boosts_applied, saved_peer_id=_saved_peer_id, fwd_from=_fwd_from, via_bot_id=_via_bot_id, via_business_bot_id=_via_business_bot_id, reply_to=_reply_to, media=_media, reply_markup=_reply_markup, entities=_entities, views=_views, forwards=_forwards, replies=_replies, edit_date=_edit_date, post_author=_post_author, grouped_id=_grouped_id, reactions=_reactions, restriction_reason=_restriction_reason, ttl_period=_ttl_period, quick_reply_shortcut_id=_quick_reply_shortcut_id, effect=_effect, factcheck=_factcheck, report_delivery_until_date=_report_delivery_until_date, paid_message_stars=_paid_message_stars)
 
 
@@ -26712,56 +26686,6 @@ class PageBlockParagraph(TLObject):
         return cls(text=_text)
 
 
-class PageBlockPhoto(TLObject):
-    CONSTRUCTOR_ID = 0x1759c560
-    SUBCLASS_OF_ID = 0x1aca5644
-
-    def __init__(self, photo_id: int, caption: 'TypePageCaption', url: Optional[str]=None, webpage_id: Optional[int]=None):
-        """
-        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap.
-        """
-        self.photo_id = photo_id
-        self.caption = caption
-        self.url = url
-        self.webpage_id = webpage_id
-
-    def to_dict(self):
-        return {
-            '_': 'PageBlockPhoto',
-            'photo_id': self.photo_id,
-            'caption': self.caption.to_dict() if isinstance(self.caption, TLObject) else self.caption,
-            'url': self.url,
-            'webpage_id': self.webpage_id
-        }
-
-    def _bytes(self):
-        assert ((self.url or self.url is not None) and (self.webpage_id or self.webpage_id is not None)) or ((self.url is None or self.url is False) and (self.webpage_id is None or self.webpage_id is False)), 'url, webpage_id parameters must all be False-y (like None) or all me True-y'
-        return b''.join((
-            b'`\xc5Y\x17',
-            struct.pack('<I', (0 if self.url is None or self.url is False else 1) | (0 if self.webpage_id is None or self.webpage_id is False else 1)),
-            struct.pack('<q', self.photo_id),
-            self.caption._bytes(),
-            b'' if self.url is None or self.url is False else (self.serialize_bytes(self.url)),
-            b'' if self.webpage_id is None or self.webpage_id is False else (struct.pack('<q', self.webpage_id)),
-        ))
-
-    @classmethod
-    def from_reader(cls, reader):
-        flags = reader.read_int()
-
-        _photo_id = reader.read_long()
-        _caption = reader.tgread_object()
-        if flags & 1:
-            _url = reader.tgread_string()
-        else:
-            _url = None
-        if flags & 1:
-            _webpage_id = reader.read_long()
-        else:
-            _webpage_id = None
-        return cls(photo_id=_photo_id, caption=_caption, url=_url, webpage_id=_webpage_id)
-
-
 class PageBlockPreformatted(TLObject):
     CONSTRUCTOR_ID = 0xc070d93e
     SUBCLASS_OF_ID = 0x1aca5644
@@ -26957,52 +26881,6 @@ class PageBlockSubtitle(TLObject):
         return cls(text=_text)
 
 
-class PageBlockTable(TLObject):
-    CONSTRUCTOR_ID = 0xbf4dea82
-    SUBCLASS_OF_ID = 0x1aca5644
-
-    def __init__(self, title: 'TypeRichText', rows: List['TypePageTableRow'], bordered: Optional[bool]=None, striped: Optional[bool]=None):
-        """
-        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap.
-        """
-        self.title = title
-        self.rows = rows
-        self.bordered = bordered
-        self.striped = striped
-
-    def to_dict(self):
-        return {
-            '_': 'PageBlockTable',
-            'title': self.title.to_dict() if isinstance(self.title, TLObject) else self.title,
-            'rows': [] if self.rows is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.rows],
-            'bordered': self.bordered,
-            'striped': self.striped
-        }
-
-    def _bytes(self):
-        return b''.join((
-            b'\x82\xeaM\xbf',
-            struct.pack('<I', (0 if self.bordered is None or self.bordered is False else 1) | (0 if self.striped is None or self.striped is False else 2)),
-            self.title._bytes(),
-            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.rows)),b''.join(x._bytes() for x in self.rows),
-        ))
-
-    @classmethod
-    def from_reader(cls, reader):
-        flags = reader.read_int()
-
-        _bordered = bool(flags & 1)
-        _striped = bool(flags & 2)
-        _title = reader.tgread_object()
-        reader.read_int()
-        _rows = []
-        for _ in range(reader.read_int()):
-            _x = reader.tgread_object()
-            _rows.append(_x)
-
-        return cls(title=_title, rows=_rows, bordered=_bordered, striped=_striped)
-
-
 class PageBlockTitle(TLObject):
     CONSTRUCTOR_ID = 0x70abc3fd
     SUBCLASS_OF_ID = 0x1aca5644
@@ -27048,47 +26926,6 @@ class PageBlockUnsupported(TLObject):
     @classmethod
     def from_reader(cls, reader):
         return cls()
-
-
-class PageBlockVideo(TLObject):
-    CONSTRUCTOR_ID = 0x7c8fe7b6
-    SUBCLASS_OF_ID = 0x1aca5644
-
-    def __init__(self, video_id: int, caption: 'TypePageCaption', autoplay: Optional[bool]=None, loop: Optional[bool]=None):
-        """
-        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap.
-        """
-        self.video_id = video_id
-        self.caption = caption
-        self.autoplay = autoplay
-        self.loop = loop
-
-    def to_dict(self):
-        return {
-            '_': 'PageBlockVideo',
-            'video_id': self.video_id,
-            'caption': self.caption.to_dict() if isinstance(self.caption, TLObject) else self.caption,
-            'autoplay': self.autoplay,
-            'loop': self.loop
-        }
-
-    def _bytes(self):
-        return b''.join((
-            b'\xb6\xe7\x8f|',
-            struct.pack('<I', (0 if self.autoplay is None or self.autoplay is False else 1) | (0 if self.loop is None or self.loop is False else 2)),
-            struct.pack('<q', self.video_id),
-            self.caption._bytes(),
-        ))
-
-    @classmethod
-    def from_reader(cls, reader):
-        flags = reader.read_int()
-
-        _autoplay = bool(flags & 1)
-        _loop = bool(flags & 2)
-        _video_id = reader.read_long()
-        _caption = reader.tgread_object()
-        return cls(video_id=_video_id, caption=_caption, autoplay=_autoplay, loop=_loop)
 
 
 class PageCaption(TLObject):
@@ -45024,7 +44861,6 @@ TypeBotCommand = BotCommand
 TypeBotCommandScope = Union[BotCommandScopeDefault,BotCommandScopeUsers,BotCommandScopeChats,BotCommandScopeChatAdmins,BotCommandScopePeer,BotCommandScopePeerAdmins,BotCommandScopePeerUser]
 TypeBotInfo = BotInfo
 TypeBotInlineResult = Union[BotInlineResult,BotInlineMediaResult]
-TypeBotInlineMessage = Union[BotInlineMessageMediaAuto,BotInlineMessageText,BotInlineMessageMediaGeo,BotInlineMessageMediaVenue,BotInlineMessageMediaContact,BotInlineMessageMediaInvoice,BotInlineMessageMediaWebPage]
 TypeBotMenuButton = Union[BotMenuButtonDefault,BotMenuButtonCommands,BotMenuButton]
 TypeBotPreviewMedia = BotPreviewMedia
 TypeBotVerification = BotVerification
@@ -45127,7 +44963,6 @@ TypeInlineBotWebView = InlineBotWebView
 TypeInlineQueryPeerType = Union[InlineQueryPeerTypeSameBotPM,InlineQueryPeerTypePM,InlineQueryPeerTypeChat,InlineQueryPeerTypeMegagroup,InlineQueryPeerTypeBroadcast,InlineQueryPeerTypeBotPM]
 TypeInputAppEvent = InputAppEvent
 TypeInputBotApp = Union[InputBotAppID,InputBotAppShortName]
-TypeInputBotInlineMessage = Union[InputBotInlineMessageMediaAuto,InputBotInlineMessageText,InputBotInlineMessageMediaGeo,InputBotInlineMessageMediaVenue,InputBotInlineMessageMediaContact,InputBotInlineMessageGame,InputBotInlineMessageMediaInvoice,InputBotInlineMessageMediaWebPage]
 TypeInputBotInlineMessageID = Union[InputBotInlineMessageID,InputBotInlineMessageID64]
 TypeInputBotInlineResult = Union[InputBotInlineResult,InputBotInlineResultPhoto,InputBotInlineResultDocument,InputBotInlineResultGame]
 TypeInputBusinessAwayMessage = InputBusinessAwayMessage
@@ -45226,7 +45061,6 @@ TypeNotifyPeer = Union[NotifyPeer,NotifyUsers,NotifyChats,NotifyBroadcasts,Notif
 TypeOutboxReadDate = OutboxReadDate
 TypeP_Q_inner_data = Union[PQInnerData,PQInnerDataDc,PQInnerDataTemp,PQInnerDataTempDc]
 TypePage = Page
-TypePageBlock = Union[PageBlockUnsupported,PageBlockTitle,PageBlockSubtitle,PageBlockAuthorDate,PageBlockHeader,PageBlockSubheader,PageBlockParagraph,PageBlockPreformatted,PageBlockFooter,PageBlockDivider,PageBlockAnchor,PageBlockList,PageBlockBlockquote,PageBlockPullquote,PageBlockPhoto,PageBlockVideo,PageBlockCover,PageBlockEmbed,PageBlockEmbedPost,PageBlockCollage,PageBlockSlideshow,PageBlockChannel,PageBlockAudio,PageBlockKicker,PageBlockTable,PageBlockOrderedList,PageBlockDetails,PageBlockRelatedArticles,PageBlockMap]
 TypePageCaption = PageCaption
 TypePageListItem = Union[PageListItemText,PageListItemBlocks]
 TypePageListOrderedItem = Union[PageListOrderedItemText,PageListOrderedItemBlocks]
@@ -45340,7 +45174,6 @@ TypeStoryItem = Union[StoryItemDeleted,StoryItemSkipped,StoryItem]
 TypeStoryReaction = Union[StoryReaction,StoryReactionPublicForward,StoryReactionPublicRepost]
 TypeStoryView = Union[StoryView,StoryViewPublicForward,StoryViewPublicRepost]
 TypeStoryViews = StoryViews
-TypeRichText = Union[TextEmpty,TextPlain,TextBold,TextItalic,TextUnderline,TextStrike,TextFixed,TextUrl,TextEmail,TextConcat,TextSubscript,TextSuperscript,TextMarked,TextPhone,TextImage,TextAnchor]
 TypeTextWithEntities = TextWithEntities
 TypeTheme = Theme
 TypeThemeSettings = ThemeSettings
@@ -45369,35 +45202,1863 @@ TypeWebViewMessageSent = WebViewMessageSent
 TypeWebViewResult = WebViewResultUrl
 
 
-class RichMessage(TLObject):
-    __slots__ = ['rtl', 'part', 'blocks', 'photos', 'documents']
-    CONSTRUCTOR_ID = 0xbaf39d8b
-    SUBCLASS_OF_ID = None
+class BotInlineMessageRichMessage(TLObject):
+    CONSTRUCTOR_ID = 0xa617e7b
+    SUBCLASS_OF_ID = 0xc4910f88
 
-    def __init__(self, blocks, photos, documents, rtl=None, part=None):
+    def __init__(self, rich_message: 'TypeRichMessage', reply_markup: Optional['TypeReplyMarkup']=None):
+        """
+        Constructor for BotInlineMessage: Instance of either BotInlineMessageMediaAuto, BotInlineMessageText, BotInlineMessageMediaGeo, BotInlineMessageMediaVenue, BotInlineMessageMediaContact, BotInlineMessageMediaInvoice, BotInlineMessageMediaWebPage, BotInlineMessageRichMessage.
+        """
+        self.rich_message = rich_message
+        self.reply_markup = reply_markup
+
+    def to_dict(self):
+        return {
+            '_': 'BotInlineMessageRichMessage',
+            'rich_message': self.rich_message.to_dict() if isinstance(self.rich_message, TLObject) else self.rich_message,
+            'reply_markup': self.reply_markup.to_dict() if isinstance(self.reply_markup, TLObject) else self.reply_markup
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'{~a\n',
+            struct.pack('<I', (0 if self.reply_markup is None or self.reply_markup is False else 4)),
+            b'' if self.reply_markup is None or self.reply_markup is False else (self.reply_markup._bytes()),
+            self.rich_message._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        if flags & 4:
+            _reply_markup = reader.tgread_object()
+        else:
+            _reply_markup = None
+        _rich_message = reader.tgread_object()
+        return cls(rich_message=_rich_message, reply_markup=_reply_markup)
+
+
+class InlineButtonTypeBuy(TLObject):
+    CONSTRUCTOR_ID = 0x48bad7a5
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeBuy'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xa5\xd7\xbaH',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
+
+
+class InlineButtonTypeCallback(TLObject):
+    CONSTRUCTOR_ID = 0x2955bc38
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, data: bytes, requires_password: Optional[bool]=None):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.data = data
+        self.requires_password = requires_password
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeCallback',
+            'data': self.data,
+            'requires_password': self.requires_password
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'8\xbcU)',
+            struct.pack('<I', (0 if self.requires_password is None or self.requires_password is False else 1)),
+            self.serialize_bytes(self.data),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _requires_password = bool(flags & 1)
+        _data = reader.tgread_bytes()
+        return cls(data=_data, requires_password=_requires_password)
+
+
+class InlineButtonTypeCopy(TLObject):
+    CONSTRUCTOR_ID = 0xb41d3272
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, copy_text: str):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.copy_text = copy_text
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeCopy',
+            'copy_text': self.copy_text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'r2\x1d\xb4',
+            self.serialize_bytes(self.copy_text),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _copy_text = reader.tgread_string()
+        return cls(copy_text=_copy_text)
+
+
+class InlineButtonTypeDisabled(TLObject):
+    CONSTRUCTOR_ID = 0xa438619d
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeDisabled'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x9da8\xa4',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
+
+
+class InlineButtonTypeGame(TLObject):
+    CONSTRUCTOR_ID = 0x5cd3709d
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeGame'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x9dp\xd3\\',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
+
+
+class InlineButtonTypeSwitchInline(TLObject):
+    CONSTRUCTOR_ID = 0x93773ff5
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, query: str, same_peer: Optional[bool]=None, peer_types: Optional[List['TypeInlineQueryPeerType']]=None):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.query = query
+        self.same_peer = same_peer
+        self.peer_types = peer_types
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeSwitchInline',
+            'query': self.query,
+            'same_peer': self.same_peer,
+            'peer_types': [] if self.peer_types is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.peer_types]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xf5?w\x93',
+            struct.pack('<I', (0 if self.same_peer is None or self.same_peer is False else 1) | (0 if self.peer_types is None or self.peer_types is False else 2)),
+            self.serialize_bytes(self.query),
+            b'' if self.peer_types is None or self.peer_types is False else b''.join((b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.peer_types)),b''.join(x._bytes() for x in self.peer_types))),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _same_peer = bool(flags & 1)
+        _query = reader.tgread_string()
+        if flags & 2:
+            reader.read_int()
+            _peer_types = []
+            for _ in range(reader.read_int()):
+                _x = reader.tgread_object()
+                _peer_types.append(_x)
+
+        else:
+            _peer_types = None
+        return cls(query=_query, same_peer=_same_peer, peer_types=_peer_types)
+
+
+class InlineButtonTypeUrl(TLObject):
+    CONSTRUCTOR_ID = 0xeca4f8d4
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, url: str):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.url = url
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeUrl',
+            'url': self.url
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xd4\xf8\xa4\xec',
+            self.serialize_bytes(self.url),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _url = reader.tgread_string()
+        return cls(url=_url)
+
+
+class InlineButtonTypeUrlAuth(TLObject):
+    CONSTRUCTOR_ID = 0xbfd02da2
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, url: str, button_id: int, fwd_text: Optional[str]=None):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.url = url
+        self.button_id = button_id
+        self.fwd_text = fwd_text
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeUrlAuth',
+            'url': self.url,
+            'button_id': self.button_id,
+            'fwd_text': self.fwd_text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xa2-\xd0\xbf',
+            struct.pack('<I', (0 if self.fwd_text is None or self.fwd_text is False else 1)),
+            b'' if self.fwd_text is None or self.fwd_text is False else (self.serialize_bytes(self.fwd_text)),
+            self.serialize_bytes(self.url),
+            struct.pack('<i', self.button_id),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        if flags & 1:
+            _fwd_text = reader.tgread_string()
+        else:
+            _fwd_text = None
+        _url = reader.tgread_string()
+        _button_id = reader.read_int()
+        return cls(url=_url, button_id=_button_id, fwd_text=_fwd_text)
+
+
+class InlineButtonTypeUserProfile(TLObject):
+    CONSTRUCTOR_ID = 0x3fa33fcf
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, user_id: int):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.user_id = user_id
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeUserProfile',
+            'user_id': self.user_id
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xcf?\xa3?',
+            struct.pack('<q', self.user_id),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _user_id = reader.read_long()
+        return cls(user_id=_user_id)
+
+
+class InlineButtonTypeWebView(TLObject):
+    CONSTRUCTOR_ID = 0x3bcab5b4
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, url: str):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.url = url
+
+    def to_dict(self):
+        return {
+            '_': 'InlineButtonTypeWebView',
+            'url': self.url
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xb4\xb5\xca;',
+            self.serialize_bytes(self.url),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _url = reader.tgread_string()
+        return cls(url=_url)
+
+
+class InputBotInlineMessageRichMessage(TLObject):
+    CONSTRUCTOR_ID = 0xb43df56c
+    SUBCLASS_OF_ID = 0x53fb4010
+
+    def __init__(self, rich_message: 'TypeInputRichMessage', reply_markup: Optional['TypeReplyMarkup']=None):
+        """
+        Constructor for InputBotInlineMessage: Instance of either InputBotInlineMessageMediaAuto, InputBotInlineMessageText, InputBotInlineMessageMediaGeo, InputBotInlineMessageMediaVenue, InputBotInlineMessageMediaContact, InputBotInlineMessageGame, InputBotInlineMessageMediaInvoice, InputBotInlineMessageMediaWebPage, InputBotInlineMessageRichMessage.
+        """
+        self.rich_message = rich_message
+        self.reply_markup = reply_markup
+
+    def to_dict(self):
+        return {
+            '_': 'InputBotInlineMessageRichMessage',
+            'rich_message': self.rich_message.to_dict() if isinstance(self.rich_message, TLObject) else self.rich_message,
+            'reply_markup': self.reply_markup.to_dict() if isinstance(self.reply_markup, TLObject) else self.reply_markup
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'l\xf5=\xb4',
+            struct.pack('<I', (0 if self.reply_markup is None or self.reply_markup is False else 4)),
+            b'' if self.reply_markup is None or self.reply_markup is False else (self.reply_markup._bytes()),
+            self.rich_message._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        if flags & 4:
+            _reply_markup = reader.tgread_object()
+        else:
+            _reply_markup = None
+        _rich_message = reader.tgread_object()
+        return cls(rich_message=_rich_message, reply_markup=_reply_markup)
+
+
+class InputInlineButtonTypeUrlAuth(TLObject):
+    CONSTRUCTOR_ID = 0x9961bcb4
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, url: str, request_write_access: Optional[bool]=None, fwd_text: Optional[str]=None, bot: Optional['TypeInputUser']=None):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.url = url
+        self.request_write_access = request_write_access
+        self.fwd_text = fwd_text
+        self.bot = bot
+
+    def to_dict(self):
+        return {
+            '_': 'InputInlineButtonTypeUrlAuth',
+            'url': self.url,
+            'request_write_access': self.request_write_access,
+            'fwd_text': self.fwd_text,
+            'bot': self.bot.to_dict() if isinstance(self.bot, TLObject) else self.bot
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xb4\xbca\x99',
+            struct.pack('<I', (0 if self.request_write_access is None or self.request_write_access is False else 1) | (0 if self.fwd_text is None or self.fwd_text is False else 2) | (0 if self.bot is None or self.bot is False else 4)),
+            b'' if self.fwd_text is None or self.fwd_text is False else (self.serialize_bytes(self.fwd_text)),
+            self.serialize_bytes(self.url),
+            b'' if self.bot is None or self.bot is False else (self.bot._bytes()),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _request_write_access = bool(flags & 1)
+        if flags & 2:
+            _fwd_text = reader.tgread_string()
+        else:
+            _fwd_text = None
+        _url = reader.tgread_string()
+        if flags & 4:
+            _bot = reader.tgread_object()
+        else:
+            _bot = None
+        return cls(url=_url, request_write_access=_request_write_access, fwd_text=_fwd_text, bot=_bot)
+
+
+class InputInlineButtonTypeUserProfile(TLObject):
+    CONSTRUCTOR_ID = 0x53f3ce5a
+    SUBCLASS_OF_ID = 0xbd13ccc4
+
+    def __init__(self, user_id: 'TypeInputUser'):
+        """
+        Constructor for InlineButtonType: Instance of either InlineButtonTypeUrl, InlineButtonTypeUrlAuth, InputInlineButtonTypeUrlAuth, InlineButtonTypeWebView, InlineButtonTypeCallback, InlineButtonTypeGame, InlineButtonTypeBuy, InlineButtonTypeSwitchInline, InlineButtonTypeUserProfile, InputInlineButtonTypeUserProfile, InlineButtonTypeCopy, InlineButtonTypeDisabled.
+        """
+        self.user_id = user_id
+
+    def to_dict(self):
+        return {
+            '_': 'InputInlineButtonTypeUserProfile',
+            'user_id': self.user_id.to_dict() if isinstance(self.user_id, TLObject) else self.user_id
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'Z\xce\xf3S',
+            self.user_id._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _user_id = reader.tgread_object()
+        return cls(user_id=_user_id)
+
+
+class InputPageBlockMap(TLObject):
+    CONSTRUCTOR_ID = 0x574b617f
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, geo: 'TypeInputGeoPoint', zoom: int, w: int, h: int, caption: 'TypePageCaption'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.geo = geo
+        self.zoom = zoom
+        self.w = w
+        self.h = h
+        self.caption = caption
+
+    def to_dict(self):
+        return {
+            '_': 'InputPageBlockMap',
+            'geo': self.geo.to_dict() if isinstance(self.geo, TLObject) else self.geo,
+            'zoom': self.zoom,
+            'w': self.w,
+            'h': self.h,
+            'caption': self.caption.to_dict() if isinstance(self.caption, TLObject) else self.caption
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x7faKW',
+            self.geo._bytes(),
+            struct.pack('<i', self.zoom),
+            struct.pack('<i', self.w),
+            struct.pack('<i', self.h),
+            self.caption._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _geo = reader.tgread_object()
+        _zoom = reader.read_int()
+        _w = reader.read_int()
+        _h = reader.read_int()
+        _caption = reader.tgread_object()
+        return cls(geo=_geo, zoom=_zoom, w=_w, h=_h, caption=_caption)
+
+
+class InputRichFileDocument(TLObject):
+    CONSTRUCTOR_ID = 0x83281dbd
+    SUBCLASS_OF_ID = 0x94e416e6
+
+    def __init__(self, id: str, document: 'TypeInputDocument'):
+        """
+        Constructor for InputRichFile: Instance of either InputRichFilePhoto, InputRichFileDocument.
+        """
+        self.id = id
+        self.document = document
+
+    def to_dict(self):
+        return {
+            '_': 'InputRichFileDocument',
+            'id': self.id,
+            'document': self.document.to_dict() if isinstance(self.document, TLObject) else self.document
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xbd\x1d(\x83',
+            self.serialize_bytes(self.id),
+            self.document._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _id = reader.tgread_string()
+        _document = reader.tgread_object()
+        return cls(id=_id, document=_document)
+
+
+class InputRichFilePhoto(TLObject):
+    CONSTRUCTOR_ID = 0x9b00622b
+    SUBCLASS_OF_ID = 0x94e416e6
+
+    def __init__(self, id: str, photo: 'TypeInputPhoto'):
+        """
+        Constructor for InputRichFile: Instance of either InputRichFilePhoto, InputRichFileDocument.
+        """
+        self.id = id
+        self.photo = photo
+
+    def to_dict(self):
+        return {
+            '_': 'InputRichFilePhoto',
+            'id': self.id,
+            'photo': self.photo.to_dict() if isinstance(self.photo, TLObject) else self.photo
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'+b\x00\x9b',
+            self.serialize_bytes(self.id),
+            self.photo._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _id = reader.tgread_string()
+        _photo = reader.tgread_object()
+        return cls(id=_id, photo=_photo)
+
+
+class InputRichMessage(TLObject):
+    CONSTRUCTOR_ID = 0xe4c449fc
+    SUBCLASS_OF_ID = 0x55a7b313
+
+    def __init__(self, blocks: List['TypePageBlock'], rtl: Optional[bool]=None, noautolink: Optional[bool]=None, photos: Optional[List['TypeInputPhoto']]=None, documents: Optional[List['TypeInputDocument']]=None, users: Optional[List['TypeInputUser']]=None):
+        """
+        Constructor for InputRichMessage: Instance of either InputRichMessage, InputRichMessageHTML, InputRichMessageMarkdown.
+        """
+        self.blocks = blocks
+        self.rtl = rtl
+        self.noautolink = noautolink
+        self.photos = photos
+        self.documents = documents
+        self.users = users
+
+    def to_dict(self):
+        return {
+            '_': 'InputRichMessage',
+            'blocks': [] if self.blocks is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.blocks],
+            'rtl': self.rtl,
+            'noautolink': self.noautolink,
+            'photos': [] if self.photos is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.photos],
+            'documents': [] if self.documents is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.documents],
+            'users': [] if self.users is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.users]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xfcI\xc4\xe4',
+            struct.pack('<I', (0 if self.rtl is None or self.rtl is False else 1) | (0 if self.noautolink is None or self.noautolink is False else 2) | (0 if self.photos is None or self.photos is False else 4) | (0 if self.documents is None or self.documents is False else 8) | (0 if self.users is None or self.users is False else 16)),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.blocks)),b''.join(x._bytes() for x in self.blocks),
+            b'' if self.photos is None or self.photos is False else b''.join((b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.photos)),b''.join(x._bytes() for x in self.photos))),
+            b'' if self.documents is None or self.documents is False else b''.join((b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.documents)),b''.join(x._bytes() for x in self.documents))),
+            b'' if self.users is None or self.users is False else b''.join((b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.users)),b''.join(x._bytes() for x in self.users))),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _rtl = bool(flags & 1)
+        _noautolink = bool(flags & 2)
+        reader.read_int()
+        _blocks = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _blocks.append(_x)
+
+        if flags & 4:
+            reader.read_int()
+            _photos = []
+            for _ in range(reader.read_int()):
+                _x = reader.tgread_object()
+                _photos.append(_x)
+
+        else:
+            _photos = None
+        if flags & 8:
+            reader.read_int()
+            _documents = []
+            for _ in range(reader.read_int()):
+                _x = reader.tgread_object()
+                _documents.append(_x)
+
+        else:
+            _documents = None
+        if flags & 16:
+            reader.read_int()
+            _users = []
+            for _ in range(reader.read_int()):
+                _x = reader.tgread_object()
+                _users.append(_x)
+
+        else:
+            _users = None
+        return cls(blocks=_blocks, rtl=_rtl, noautolink=_noautolink, photos=_photos, documents=_documents, users=_users)
+
+
+class InputRichMessageHTML(TLObject):
+    CONSTRUCTOR_ID = 0xdacb836a
+    SUBCLASS_OF_ID = 0x55a7b313
+
+    def __init__(self, html: str, rtl: Optional[bool]=None, noautolink: Optional[bool]=None, files: Optional[List['TypeInputRichFile']]=None):
+        """
+        Constructor for InputRichMessage: Instance of either InputRichMessage, InputRichMessageHTML, InputRichMessageMarkdown.
+        """
+        self.html = html
+        self.rtl = rtl
+        self.noautolink = noautolink
+        self.files = files
+
+    def to_dict(self):
+        return {
+            '_': 'InputRichMessageHTML',
+            'html': self.html,
+            'rtl': self.rtl,
+            'noautolink': self.noautolink,
+            'files': [] if self.files is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.files]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'j\x83\xcb\xda',
+            struct.pack('<I', (0 if self.rtl is None or self.rtl is False else 1) | (0 if self.noautolink is None or self.noautolink is False else 2) | (0 if self.files is None or self.files is False else 4)),
+            self.serialize_bytes(self.html),
+            b'' if self.files is None or self.files is False else b''.join((b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.files)),b''.join(x._bytes() for x in self.files))),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _rtl = bool(flags & 1)
+        _noautolink = bool(flags & 2)
+        _html = reader.tgread_string()
+        if flags & 4:
+            reader.read_int()
+            _files = []
+            for _ in range(reader.read_int()):
+                _x = reader.tgread_object()
+                _files.append(_x)
+
+        else:
+            _files = None
+        return cls(html=_html, rtl=_rtl, noautolink=_noautolink, files=_files)
+
+
+class InputRichMessageMarkdown(TLObject):
+    CONSTRUCTOR_ID = 0x4b572c
+    SUBCLASS_OF_ID = 0x55a7b313
+
+    def __init__(self, markdown: str, rtl: Optional[bool]=None, noautolink: Optional[bool]=None, files: Optional[List['TypeInputRichFile']]=None):
+        """
+        Constructor for InputRichMessage: Instance of either InputRichMessage, InputRichMessageHTML, InputRichMessageMarkdown.
+        """
+        self.markdown = markdown
+        self.rtl = rtl
+        self.noautolink = noautolink
+        self.files = files
+
+    def to_dict(self):
+        return {
+            '_': 'InputRichMessageMarkdown',
+            'markdown': self.markdown,
+            'rtl': self.rtl,
+            'noautolink': self.noautolink,
+            'files': [] if self.files is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.files]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b',WK\x00',
+            struct.pack('<I', (0 if self.rtl is None or self.rtl is False else 1) | (0 if self.noautolink is None or self.noautolink is False else 2) | (0 if self.files is None or self.files is False else 4)),
+            self.serialize_bytes(self.markdown),
+            b'' if self.files is None or self.files is False else b''.join((b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.files)),b''.join(x._bytes() for x in self.files))),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _rtl = bool(flags & 1)
+        _noautolink = bool(flags & 2)
+        _markdown = reader.tgread_string()
+        if flags & 4:
+            reader.read_int()
+            _files = []
+            for _ in range(reader.read_int()):
+                _x = reader.tgread_object()
+                _files.append(_x)
+
+        else:
+            _files = None
+        return cls(markdown=_markdown, rtl=_rtl, noautolink=_noautolink, files=_files)
+
+
+class PageBlockBlockquoteBlocks(TLObject):
+    CONSTRUCTOR_ID = 0xe6e47c4
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, blocks: List['TypePageBlock'], caption: 'TypeRichText'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.blocks = blocks
+        self.caption = caption
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockBlockquoteBlocks',
+            'blocks': [] if self.blocks is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.blocks],
+            'caption': self.caption.to_dict() if isinstance(self.caption, TLObject) else self.caption
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xc4Gn\x0e',
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.blocks)),b''.join(x._bytes() for x in self.blocks),
+            self.caption._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        reader.read_int()
+        _blocks = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _blocks.append(_x)
+
+        _caption = reader.tgread_object()
+        return cls(blocks=_blocks, caption=_caption)
+
+
+class PageBlockButtonRow(TLObject):
+    CONSTRUCTOR_ID = 0x6d640318
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, buttons: List['TypePageButton'], align_left: Optional[bool]=None, align_center: Optional[bool]=None, align_right: Optional[bool]=None):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.buttons = buttons
+        self.align_left = align_left
+        self.align_center = align_center
+        self.align_right = align_right
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockButtonRow',
+            'buttons': [] if self.buttons is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.buttons],
+            'align_left': self.align_left,
+            'align_center': self.align_center,
+            'align_right': self.align_right
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x18\x03dm',
+            struct.pack('<I', (0 if self.align_left is None or self.align_left is False else 1) | (0 if self.align_center is None or self.align_center is False else 2) | (0 if self.align_right is None or self.align_right is False else 4)),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.buttons)),b''.join(x._bytes() for x in self.buttons),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _align_left = bool(flags & 1)
+        _align_center = bool(flags & 2)
+        _align_right = bool(flags & 4)
+        reader.read_int()
+        _buttons = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _buttons.append(_x)
+
+        return cls(buttons=_buttons, align_left=_align_left, align_center=_align_center, align_right=_align_right)
+
+
+class PageBlockDocument(TLObject):
+    CONSTRUCTOR_ID = 0x38fa3ba3
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, document_id: int, caption: 'TypePageCaption'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.document_id = document_id
+        self.caption = caption
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockDocument',
+            'document_id': self.document_id,
+            'caption': self.caption.to_dict() if isinstance(self.caption, TLObject) else self.caption
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xa3;\xfa8',
+            struct.pack('<q', self.document_id),
+            self.caption._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _document_id = reader.read_long()
+        _caption = reader.tgread_object()
+        return cls(document_id=_document_id, caption=_caption)
+
+
+class PageBlockHeading1(TLObject):
+    CONSTRUCTOR_ID = 0xbaff072f
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockHeading1',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'/\x07\xff\xba',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class PageBlockHeading2(TLObject):
+    CONSTRUCTOR_ID = 0x96b2aec
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockHeading2',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xec*k\t',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class PageBlockHeading3(TLObject):
+    CONSTRUCTOR_ID = 0x67e731ad
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockHeading3',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xad1\xe7g',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class PageBlockHeading4(TLObject):
+    CONSTRUCTOR_ID = 0xb532772b
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockHeading4',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'+w2\xb5',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class PageBlockHeading5(TLObject):
+    CONSTRUCTOR_ID = 0xdbbe6c6a
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockHeading5',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'jl\xbe\xdb',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class PageBlockHeading6(TLObject):
+    CONSTRUCTOR_ID = 0x682a41a9
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockHeading6',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xa9A*h',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class PageBlockMath(TLObject):
+    CONSTRUCTOR_ID = 0x59080c20
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, source: str):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.source = source
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockMath',
+            'source': self.source
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b' \x0c\x08Y',
+            self.serialize_bytes(self.source),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _source = reader.tgread_string()
+        return cls(source=_source)
+
+
+class PageBlockPhoto(TLObject):
+    CONSTRUCTOR_ID = 0x1759c560
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, photo_id: int, caption: 'TypePageCaption', spoiler: Optional[bool]=None, url: Optional[str]=None, webpage_id: Optional[int]=None):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.photo_id = photo_id
+        self.caption = caption
+        self.spoiler = spoiler
+        self.url = url
+        self.webpage_id = webpage_id
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockPhoto',
+            'photo_id': self.photo_id,
+            'caption': self.caption.to_dict() if isinstance(self.caption, TLObject) else self.caption,
+            'spoiler': self.spoiler,
+            'url': self.url,
+            'webpage_id': self.webpage_id
+        }
+
+    def _bytes(self):
+        assert ((self.url or self.url is not None) and (self.webpage_id or self.webpage_id is not None)) or ((self.url is None or self.url is False) and (self.webpage_id is None or self.webpage_id is False)), 'url, webpage_id parameters must all be False-y (like None) or all me True-y'
+        return b''.join((
+            b'`\xc5Y\x17',
+            struct.pack('<I', (0 if self.spoiler is None or self.spoiler is False else 2) | (0 if self.url is None or self.url is False else 1) | (0 if self.webpage_id is None or self.webpage_id is False else 1)),
+            struct.pack('<q', self.photo_id),
+            self.caption._bytes(),
+            b'' if self.url is None or self.url is False else (self.serialize_bytes(self.url)),
+            b'' if self.webpage_id is None or self.webpage_id is False else (struct.pack('<q', self.webpage_id)),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _spoiler = bool(flags & 2)
+        _photo_id = reader.read_long()
+        _caption = reader.tgread_object()
+        if flags & 1:
+            _url = reader.tgread_string()
+        else:
+            _url = None
+        if flags & 1:
+            _webpage_id = reader.read_long()
+        else:
+            _webpage_id = None
+        return cls(photo_id=_photo_id, caption=_caption, spoiler=_spoiler, url=_url, webpage_id=_webpage_id)
+
+
+class PageBlockTable(TLObject):
+    CONSTRUCTOR_ID = 0xbf4dea82
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, title: 'TypeRichText', rows: List['TypePageTableRow'], bordered: Optional[bool]=None, striped: Optional[bool]=None, compact: Optional[bool]=None):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.title = title
+        self.rows = rows
+        self.bordered = bordered
+        self.striped = striped
+        self.compact = compact
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockTable',
+            'title': self.title.to_dict() if isinstance(self.title, TLObject) else self.title,
+            'rows': [] if self.rows is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.rows],
+            'bordered': self.bordered,
+            'striped': self.striped,
+            'compact': self.compact
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x82\xeaM\xbf',
+            struct.pack('<I', (0 if self.bordered is None or self.bordered is False else 1) | (0 if self.striped is None or self.striped is False else 2) | (0 if self.compact is None or self.compact is False else 4)),
+            self.title._bytes(),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.rows)),b''.join(x._bytes() for x in self.rows),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _bordered = bool(flags & 1)
+        _striped = bool(flags & 2)
+        _compact = bool(flags & 4)
+        _title = reader.tgread_object()
+        reader.read_int()
+        _rows = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _rows.append(_x)
+
+        return cls(title=_title, rows=_rows, bordered=_bordered, striped=_striped, compact=_compact)
+
+
+class PageBlockThinking(TLObject):
+    CONSTRUCTOR_ID = 0x3c29a3e2
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockThinking',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xe2\xa3)<',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class PageBlockVideo(TLObject):
+    CONSTRUCTOR_ID = 0x7c8fe7b6
+    SUBCLASS_OF_ID = 0x1aca5644
+
+    def __init__(self, video_id: int, caption: 'TypePageCaption', autoplay: Optional[bool]=None, loop: Optional[bool]=None, spoiler: Optional[bool]=None):
+        """
+        Constructor for PageBlock: Instance of either PageBlockUnsupported, PageBlockTitle, PageBlockSubtitle, PageBlockAuthorDate, PageBlockHeader, PageBlockSubheader, PageBlockParagraph, PageBlockPreformatted, PageBlockFooter, PageBlockDivider, PageBlockAnchor, PageBlockList, PageBlockBlockquote, PageBlockPullquote, PageBlockPhoto, PageBlockVideo, PageBlockCover, PageBlockEmbed, PageBlockEmbedPost, PageBlockCollage, PageBlockSlideshow, PageBlockChannel, PageBlockAudio, PageBlockKicker, PageBlockTable, PageBlockOrderedList, PageBlockDetails, PageBlockRelatedArticles, PageBlockMap, PageBlockHeading1, PageBlockHeading2, PageBlockHeading3, PageBlockHeading4, PageBlockHeading5, PageBlockHeading6, PageBlockMath, PageBlockThinking, InputPageBlockMap, PageBlockBlockquoteBlocks, PageBlockButtonRow, PageBlockDocument.
+        """
+        self.video_id = video_id
+        self.caption = caption
+        self.autoplay = autoplay
+        self.loop = loop
+        self.spoiler = spoiler
+
+    def to_dict(self):
+        return {
+            '_': 'PageBlockVideo',
+            'video_id': self.video_id,
+            'caption': self.caption.to_dict() if isinstance(self.caption, TLObject) else self.caption,
+            'autoplay': self.autoplay,
+            'loop': self.loop,
+            'spoiler': self.spoiler
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xb6\xe7\x8f|',
+            struct.pack('<I', (0 if self.autoplay is None or self.autoplay is False else 1) | (0 if self.loop is None or self.loop is False else 2) | (0 if self.spoiler is None or self.spoiler is False else 4)),
+            struct.pack('<q', self.video_id),
+            self.caption._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _autoplay = bool(flags & 1)
+        _loop = bool(flags & 2)
+        _spoiler = bool(flags & 4)
+        _video_id = reader.read_long()
+        _caption = reader.tgread_object()
+        return cls(video_id=_video_id, caption=_caption, autoplay=_autoplay, loop=_loop, spoiler=_spoiler)
+
+
+class PageButton(TLObject):
+    CONSTRUCTOR_ID = 0x692a5488
+    SUBCLASS_OF_ID = 0x9e4eb991
+
+    def __init__(self, text: 'TypeRichText', type: 'TypeInlineButtonType', style: Optional['TypeRichButtonStyle']=None):
+        """
+        Constructor for PageButton: Instance of PageButton.
+        """
+        self.text = text
+        self.type = type
+        self.style = style
+
+    def to_dict(self):
+        return {
+            '_': 'PageButton',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text,
+            'type': self.type.to_dict() if isinstance(self.type, TLObject) else self.type,
+            'style': self.style.to_dict() if isinstance(self.style, TLObject) else self.style
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x88T*i',
+            struct.pack('<I', (0 if self.style is None or self.style is False else 1)),
+            self.text._bytes(),
+            self.type._bytes(),
+            b'' if self.style is None or self.style is False else (self.style._bytes()),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _text = reader.tgread_object()
+        _type = reader.tgread_object()
+        if flags & 1:
+            _style = reader.tgread_object()
+        else:
+            _style = None
+        return cls(text=_text, type=_type, style=_style)
+
+
+class RichButtonStyle(TLObject):
+    CONSTRUCTOR_ID = 0x3c610bd
+    SUBCLASS_OF_ID = 0x2e6f5b5f
+
+    def __init__(self, bg_primary: Optional[bool]=None, bg_danger: Optional[bool]=None, bg_success: Optional[bool]=None, link: Optional[bool]=None):
+        """
+        Constructor for RichButtonStyle: Instance of RichButtonStyle.
+        """
+        self.bg_primary = bg_primary
+        self.bg_danger = bg_danger
+        self.bg_success = bg_success
+        self.link = link
+
+    def to_dict(self):
+        return {
+            '_': 'RichButtonStyle',
+            'bg_primary': self.bg_primary,
+            'bg_danger': self.bg_danger,
+            'bg_success': self.bg_success,
+            'link': self.link
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xbd\x10\xc6\x03',
+            struct.pack('<I', (0 if self.bg_primary is None or self.bg_primary is False else 1) | (0 if self.bg_danger is None or self.bg_danger is False else 2) | (0 if self.bg_success is None or self.bg_success is False else 4) | (0 if self.link is None or self.link is False else 8)),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _bg_primary = bool(flags & 1)
+        _bg_danger = bool(flags & 2)
+        _bg_success = bool(flags & 4)
+        _link = bool(flags & 8)
+        return cls(bg_primary=_bg_primary, bg_danger=_bg_danger, bg_success=_bg_success, link=_link)
+
+
+class RichMessage(TLObject):
+    CONSTRUCTOR_ID = 0xbaf39d8b
+    SUBCLASS_OF_ID = 0xe42b2a41
+
+    def __init__(self, blocks: List['TypePageBlock'], photos: List['TypePhoto'], documents: List['TypeDocument'], rtl: Optional[bool]=None, part: Optional[bool]=None):
+        """
+        Constructor for RichMessage: Instance of RichMessage.
+        """
         self.blocks = blocks
         self.photos = photos
         self.documents = documents
         self.rtl = rtl
         self.part = part
 
+    def to_dict(self):
+        return {
+            '_': 'RichMessage',
+            'blocks': [] if self.blocks is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.blocks],
+            'photos': [] if self.photos is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.photos],
+            'documents': [] if self.documents is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.documents],
+            'rtl': self.rtl,
+            'part': self.part
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x8b\x9d\xf3\xba',
+            struct.pack('<I', (0 if self.rtl is None or self.rtl is False else 1) | (0 if self.part is None or self.part is False else 2)),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.blocks)),b''.join(x._bytes() for x in self.blocks),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.photos)),b''.join(x._bytes() for x in self.photos),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.documents)),b''.join(x._bytes() for x in self.documents),
+        ))
+
     @classmethod
     def from_reader(cls, reader):
         flags = reader.read_int()
-        rtl = bool(flags & 1)
-        part = bool(flags & 2)
-        blocks = reader.tgread_vector()
-        photos = reader.tgread_vector()
-        documents = reader.tgread_vector()
-        return cls(blocks, photos, documents, rtl, part)
 
-    def to_dict(self, recursive=True):
+        _rtl = bool(flags & 1)
+        _part = bool(flags & 2)
+        reader.read_int()
+        _blocks = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _blocks.append(_x)
+
+        reader.read_int()
+        _photos = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _photos.append(_x)
+
+        reader.read_int()
+        _documents = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _documents.append(_x)
+
+        return cls(blocks=_blocks, photos=_photos, documents=_documents, rtl=_rtl, part=_part)
+
+
+class TextAutoEmail(TLObject):
+    CONSTRUCTOR_ID = 0xc556a45d
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
         return {
-            '_': 'RichMessage',
-            'rtl': self.rtl,
-            'part': self.part,
-            'blocks': self.blocks,
-            'photos': self.photos,
-            'documents': self.documents,
+            '_': 'TextAutoEmail',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
         }
 
+    def _bytes(self):
+        return b''.join((
+            b']\xa4V\xc5',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextAutoPhone(TLObject):
+    CONSTRUCTOR_ID = 0x24c26789
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextAutoPhone',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x89g\xc2$',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextAutoUrl(TLObject):
+    CONSTRUCTOR_ID = 0xac6a83aa
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextAutoUrl',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xaa\x83j\xac',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextBankCard(TLObject):
+    CONSTRUCTOR_ID = 0xb956812d
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextBankCard',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'-\x81V\xb9',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextBotCommand(TLObject):
+    CONSTRUCTOR_ID = 0x2ff29d3
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextBotCommand',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xd3)\xff\x02',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextButton(TLObject):
+    CONSTRUCTOR_ID = 0xafc79cd6
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText', type: 'TypeInlineButtonType', style: Optional['TypeRichButtonStyle']=None):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+        self.type = type
+        self.style = style
+
+    def to_dict(self):
+        return {
+            '_': 'TextButton',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text,
+            'type': self.type.to_dict() if isinstance(self.type, TLObject) else self.type,
+            'style': self.style.to_dict() if isinstance(self.style, TLObject) else self.style
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xd6\x9c\xc7\xaf',
+            struct.pack('<I', (0 if self.style is None or self.style is False else 1)),
+            self.text._bytes(),
+            self.type._bytes(),
+            b'' if self.style is None or self.style is False else (self.style._bytes()),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _text = reader.tgread_object()
+        _type = reader.tgread_object()
+        if flags & 1:
+            _style = reader.tgread_object()
+        else:
+            _style = None
+        return cls(text=_text, type=_type, style=_style)
+
+
+class TextCashtag(TLObject):
+    CONSTRUCTOR_ID = 0x7b9e1801
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextCashtag',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x01\x18\x9e{',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextCustomEmoji(TLObject):
+    CONSTRUCTOR_ID = 0xa26156c0
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, document_id: int, alt: str):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.document_id = document_id
+        self.alt = alt
+
+    def to_dict(self):
+        return {
+            '_': 'TextCustomEmoji',
+            'document_id': self.document_id,
+            'alt': self.alt
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xc0Va\xa2',
+            struct.pack('<q', self.document_id),
+            self.serialize_bytes(self.alt),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _document_id = reader.read_long()
+        _alt = reader.tgread_string()
+        return cls(document_id=_document_id, alt=_alt)
+
+
+class TextDate(TLObject):
+    CONSTRUCTOR_ID = 0xa5b45e2b
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText', date: Optional[datetime], relative: Optional[bool]=None, short_time: Optional[bool]=None, long_time: Optional[bool]=None, short_date: Optional[bool]=None, long_date: Optional[bool]=None, day_of_week: Optional[bool]=None):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+        self.date = date
+        self.relative = relative
+        self.short_time = short_time
+        self.long_time = long_time
+        self.short_date = short_date
+        self.long_date = long_date
+        self.day_of_week = day_of_week
+
+    def to_dict(self):
+        return {
+            '_': 'TextDate',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text,
+            'date': self.date,
+            'relative': self.relative,
+            'short_time': self.short_time,
+            'long_time': self.long_time,
+            'short_date': self.short_date,
+            'long_date': self.long_date,
+            'day_of_week': self.day_of_week
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'+^\xb4\xa5',
+            struct.pack('<I', (0 if self.relative is None or self.relative is False else 1) | (0 if self.short_time is None or self.short_time is False else 2) | (0 if self.long_time is None or self.long_time is False else 4) | (0 if self.short_date is None or self.short_date is False else 8) | (0 if self.long_date is None or self.long_date is False else 16) | (0 if self.day_of_week is None or self.day_of_week is False else 32)),
+            self.text._bytes(),
+            self.serialize_datetime(self.date),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _relative = bool(flags & 1)
+        _short_time = bool(flags & 2)
+        _long_time = bool(flags & 4)
+        _short_date = bool(flags & 8)
+        _long_date = bool(flags & 16)
+        _day_of_week = bool(flags & 32)
+        _text = reader.tgread_object()
+        _date = reader.tgread_date()
+        return cls(text=_text, date=_date, relative=_relative, short_time=_short_time, long_time=_long_time, short_date=_short_date, long_date=_long_date, day_of_week=_day_of_week)
+
+
+class TextDiff(TLObject):
+    CONSTRUCTOR_ID = 0x9686cb50
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText', old_text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+        self.old_text = old_text
+
+    def to_dict(self):
+        return {
+            '_': 'TextDiff',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text,
+            'old_text': self.old_text.to_dict() if isinstance(self.old_text, TLObject) else self.old_text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'P\xcb\x86\x96',
+            self.text._bytes(),
+            self.old_text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        _old_text = reader.tgread_object()
+        return cls(text=_text, old_text=_old_text)
+
+
+class TextHashtag(TLObject):
+    CONSTRUCTOR_ID = 0x519524ea
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextHashtag',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xea$\x95Q',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextMath(TLObject):
+    CONSTRUCTOR_ID = 0x9d2eac97
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, source: str):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.source = source
+
+    def to_dict(self):
+        return {
+            '_': 'TextMath',
+            'source': self.source
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x97\xac.\x9d',
+            self.serialize_bytes(self.source),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _source = reader.tgread_string()
+        return cls(source=_source)
+
+
+class TextMention(TLObject):
+    CONSTRUCTOR_ID = 0xcd24cf44
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextMention',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'D\xcf$\xcd',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextMentionName(TLObject):
+    CONSTRUCTOR_ID = 0x1a9fbfc
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText', user_id: int):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+        self.user_id = user_id
+
+    def to_dict(self):
+        return {
+            '_': 'TextMentionName',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text,
+            'user_id': self.user_id
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xfc\xfb\xa9\x01',
+            self.text._bytes(),
+            struct.pack('<q', self.user_id),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        _user_id = reader.read_long()
+        return cls(text=_text, user_id=_user_id)
+
+
+class TextSpoiler(TLObject):
+    CONSTRUCTOR_ID = 0x4c2a5d62
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextSpoiler',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'b]*L',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+
+class TextTonAddress(TLObject):
+    CONSTRUCTOR_ID = 0x3cd2a36a
+    SUBCLASS_OF_ID = 0xf1d0b479
+
+    def __init__(self, text: 'TypeRichText'):
+        """
+        Constructor for RichText: Instance of either TextEmpty, TextPlain, TextBold, TextItalic, TextUnderline, TextStrike, TextFixed, TextUrl, TextEmail, TextConcat, TextSubscript, TextSuperscript, TextMarked, TextPhone, TextImage, TextAnchor, TextMath, TextCustomEmoji, TextSpoiler, TextMention, TextHashtag, TextBotCommand, TextCashtag, TextAutoUrl, TextAutoEmail, TextAutoPhone, TextBankCard, TextMentionName, TextDate, TextDiff, TextButton, TextTonAddress.
+        """
+        self.text = text
+
+    def to_dict(self):
+        return {
+            '_': 'TextTonAddress',
+            'text': self.text.to_dict() if isinstance(self.text, TLObject) else self.text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'j\xa3\xd2<',
+            self.text._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _text = reader.tgread_object()
+        return cls(text=_text)
+
+TypeInlineButtonType = Union[InlineButtonTypeUrl,InlineButtonTypeUrlAuth,InputInlineButtonTypeUrlAuth,InlineButtonTypeWebView,InlineButtonTypeCallback,InlineButtonTypeGame,InlineButtonTypeBuy,InlineButtonTypeSwitchInline,InlineButtonTypeUserProfile,InputInlineButtonTypeUserProfile,InlineButtonTypeCopy,InlineButtonTypeDisabled]
+TypeInputRichFile = Union[InputRichFilePhoto,InputRichFileDocument]
+TypeInputRichMessage = Union[InputRichMessage,InputRichMessageHTML,InputRichMessageMarkdown]
+TypePageButton = PageButton
+TypeRichButtonStyle = RichButtonStyle
+TypeRichMessage = RichMessage
+TypeBotInlineMessage = Union[BotInlineMessageMediaAuto,BotInlineMessageText,BotInlineMessageMediaGeo,BotInlineMessageMediaVenue,BotInlineMessageMediaContact,BotInlineMessageMediaInvoice,BotInlineMessageMediaWebPage,BotInlineMessageRichMessage]
+TypeInputBotInlineMessage = Union[InputBotInlineMessageMediaAuto,InputBotInlineMessageText,InputBotInlineMessageMediaGeo,InputBotInlineMessageMediaVenue,InputBotInlineMessageMediaContact,InputBotInlineMessageGame,InputBotInlineMessageMediaInvoice,InputBotInlineMessageMediaWebPage,InputBotInlineMessageRichMessage]
+TypePageBlock = Union[PageBlockUnsupported,PageBlockTitle,PageBlockSubtitle,PageBlockAuthorDate,PageBlockHeader,PageBlockSubheader,PageBlockParagraph,PageBlockPreformatted,PageBlockFooter,PageBlockDivider,PageBlockAnchor,PageBlockList,PageBlockBlockquote,PageBlockPullquote,PageBlockPhoto,PageBlockVideo,PageBlockCover,PageBlockEmbed,PageBlockEmbedPost,PageBlockCollage,PageBlockSlideshow,PageBlockChannel,PageBlockAudio,PageBlockKicker,PageBlockTable,PageBlockOrderedList,PageBlockDetails,PageBlockRelatedArticles,PageBlockMap,PageBlockHeading1,PageBlockHeading2,PageBlockHeading3,PageBlockHeading4,PageBlockHeading5,PageBlockHeading6,PageBlockMath,PageBlockThinking,InputPageBlockMap,PageBlockBlockquoteBlocks,PageBlockButtonRow,PageBlockDocument]
+TypeRichText = Union[TextEmpty,TextPlain,TextBold,TextItalic,TextUnderline,TextStrike,TextFixed,TextUrl,TextEmail,TextConcat,TextSubscript,TextSuperscript,TextMarked,TextPhone,TextImage,TextAnchor,TextMath,TextCustomEmoji,TextSpoiler,TextMention,TextHashtag,TextBotCommand,TextCashtag,TextAutoUrl,TextAutoEmail,TextAutoPhone,TextBankCard,TextMentionName,TextDate,TextDiff,TextButton,TextTonAddress]
