@@ -20849,7 +20849,6 @@ class Message(TLObject):
         else:
             _paid_message_stars = None
         import logging as _lg
-        _lg.getLogger('rich_dbg').warning(f'FLAGS2={flags2} bit13={bool(flags2 & 8192)}')
         return cls(id=_id, peer_id=_peer_id, date=_date, message=_message, out=_out, mentioned=_mentioned, media_unread=_media_unread, silent=_silent, post=_post, from_scheduled=_from_scheduled, legacy=_legacy, edit_hide=_edit_hide, pinned=_pinned, noforwards=_noforwards, invert_media=_invert_media, offline=_offline, video_processing_pending=_video_processing_pending, from_id=_from_id, from_boosts_applied=_from_boosts_applied, saved_peer_id=_saved_peer_id, fwd_from=_fwd_from, via_bot_id=_via_bot_id, via_business_bot_id=_via_business_bot_id, reply_to=_reply_to, media=_media, reply_markup=_reply_markup, entities=_entities, views=_views, forwards=_forwards, replies=_replies, edit_date=_edit_date, post_author=_post_author, grouped_id=_grouped_id, reactions=_reactions, restriction_reason=_restriction_reason, ttl_period=_ttl_period, quick_reply_shortcut_id=_quick_reply_shortcut_id, effect=_effect, factcheck=_factcheck, report_delivery_until_date=_report_delivery_until_date, paid_message_stars=_paid_message_stars)
 
 
