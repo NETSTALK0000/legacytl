@@ -5,7 +5,7 @@ import os
 import struct
 from datetime import datetime
 if TYPE_CHECKING:
-    from ...tl.types import TypeAvailableEffect, TypeAvailableReaction, TypeBotApp, TypeBotInlineResult, TypeChat, TypeChatAdminWithInvites, TypeChatFull, TypeChatInviteImporter, TypeDialog, TypeDialogFilter, TypeDocument, TypeEmojiGroup, TypeEncryptedFile, TypeExportedChatInvite, TypeForumTopic, TypeHighScore, TypeInlineBotSwitchPM, TypeInlineBotWebView, TypeInlineQueryPeerType, TypeMessage, TypeMessageMedia, TypeMessagePeerReaction, TypeMessagePeerVote, TypeMessageViews, TypeMessagesFilter, TypeMissingInvitee, TypePeerSettings, TypeQuickReply, TypeReaction, TypeSavedDialog, TypeSavedReactionTag, TypeSearchResultsCalendarPeriod, TypeSearchResultsPosition, TypeSponsoredMessage, TypeStickerKeyword, TypeStickerPack, TypeStickerSet, TypeStickerSetCovered, TypeTextWithEntities, TypeUpdates, TypeUser, TypeWebPage
+    from ...tl.types import TypeAvailableEffect, TypeAvailableReaction, TypeBotApp, TypeBotInlineResult, TypeChat, TypeChatAdminWithInvites, TypeChatFull, TypeChatInviteImporter, TypeDialog, TypeDialogFilter, TypeDocument, TypeEmojiGroup, TypeEncryptedFile, TypeExportedChatInvite, TypeForumTopic, TypeHighScore, TypeInlineBotSwitchPM, TypeInlineBotWebView, TypeInlineQueryPeerType, TypeMessage, TypeMessageMedia, TypeMessagePeerReaction, TypeMessagePeerVote, TypeMessageViews, TypeMessagesFilter, TypeMissingInvitee, TypePeerSettings, TypeQuickReply, TypeReaction, TypeRichMessage, TypeSavedDialog, TypeSavedReactionTag, TypeSearchPostsFlood, TypeSearchResultsCalendarPeriod, TypeSearchResultsPosition, TypeSponsoredMessage, TypeStickerKeyword, TypeStickerPack, TypeStickerSet, TypeStickerSetCovered, TypeTextWithEntities, TypeUpdates, TypeUser, TypeWebPage
     from ...tl.types.updates import TypeState
 
 
@@ -755,6 +755,75 @@ class ChatInviteImporters(TLObject):
         return cls(count=_count, importers=_importers, users=_users)
 
 
+class ChatInviteJoinResultOk(TLObject):
+    CONSTRUCTOR_ID = 0x445663a7
+    SUBCLASS_OF_ID = 0x5d0ff992
+
+    def __init__(self, updates: 'TypeUpdates'):
+        """
+        Constructor for messages.ChatInviteJoinResult: Instance of either ChatInviteJoinResultOk, ChatInviteJoinResultWebView.
+        """
+        self.updates = updates
+
+    def to_dict(self):
+        return {
+            '_': 'ChatInviteJoinResultOk',
+            'updates': self.updates.to_dict() if isinstance(self.updates, TLObject) else self.updates
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xa7cVD',
+            self.updates._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _updates = reader.tgread_object()
+        return cls(updates=_updates)
+
+
+class ChatInviteJoinResultWebView(TLObject):
+    CONSTRUCTOR_ID = 0x61ca29d3
+    SUBCLASS_OF_ID = 0x5d0ff992
+
+    def __init__(self, bot_id: int, query_id: int, users: List['TypeUser']):
+        """
+        Constructor for messages.ChatInviteJoinResult: Instance of either ChatInviteJoinResultOk, ChatInviteJoinResultWebView.
+        """
+        self.bot_id = bot_id
+        self.query_id = query_id
+        self.users = users
+
+    def to_dict(self):
+        return {
+            '_': 'ChatInviteJoinResultWebView',
+            'bot_id': self.bot_id,
+            'query_id': self.query_id,
+            'users': [] if self.users is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.users]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xd3)\xcaa',
+            struct.pack('<q', self.bot_id),
+            struct.pack('<q', self.query_id),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.users)),b''.join(x._bytes() for x in self.users),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _bot_id = reader.read_long()
+        _query_id = reader.read_long()
+        reader.read_int()
+        _users = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _users.append(_x)
+
+        return cls(bot_id=_bot_id, query_id=_query_id, users=_users)
+
+
 class Chats(TLObject):
     CONSTRUCTOR_ID = 0x64ff9fd5
     SUBCLASS_OF_ID = 0x99d5cb14
@@ -851,6 +920,72 @@ class CheckedHistoryImportPeer(TLObject):
     def from_reader(cls, reader):
         _confirm_text = reader.tgread_string()
         return cls(confirm_text=_confirm_text)
+
+
+class ComposedMessageWithAI(TLObject):
+    CONSTRUCTOR_ID = 0x90d7adfa
+    SUBCLASS_OF_ID = 0x140803df
+
+    def __init__(self, result_text: 'TypeTextWithEntities', diff_text: Optional['TypeTextWithEntities']=None):
+        """
+        Constructor for messages.ComposedMessageWithAI: Instance of ComposedMessageWithAI.
+        """
+        self.result_text = result_text
+        self.diff_text = diff_text
+
+    def to_dict(self):
+        return {
+            '_': 'ComposedMessageWithAI',
+            'result_text': self.result_text.to_dict() if isinstance(self.result_text, TLObject) else self.result_text,
+            'diff_text': self.diff_text.to_dict() if isinstance(self.diff_text, TLObject) else self.diff_text
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xfa\xad\xd7\x90',
+            struct.pack('<I', (0 if self.diff_text is None or self.diff_text is False else 1)),
+            self.result_text._bytes(),
+            b'' if self.diff_text is None or self.diff_text is False else (self.diff_text._bytes()),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _result_text = reader.tgread_object()
+        if flags & 1:
+            _diff_text = reader.tgread_object()
+        else:
+            _diff_text = None
+        return cls(result_text=_result_text, diff_text=_diff_text)
+
+
+class ComposedRichMessageWithAI(TLObject):
+    CONSTRUCTOR_ID = 0x4c4537c8
+    SUBCLASS_OF_ID = 0x29aba753
+
+    def __init__(self, result: 'TypeRichMessage'):
+        """
+        Constructor for messages.ComposedRichMessageWithAI: Instance of ComposedRichMessageWithAI.
+        """
+        self.result = result
+
+    def to_dict(self):
+        return {
+            '_': 'ComposedRichMessageWithAI',
+            'result': self.result.to_dict() if isinstance(self.result, TLObject) else self.result
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xc87EL',
+            self.result._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _result = reader.tgread_object()
+        return cls(result=_result)
 
 
 class DhConfig(TLObject):
@@ -1189,6 +1324,116 @@ class DiscussionMessage(TLObject):
             _users.append(_x)
 
         return cls(messages=_messages, unread_count=_unread_count, chats=_chats, users=_users, max_id=_max_id, read_inbox_max_id=_read_inbox_max_id, read_outbox_max_id=_read_outbox_max_id)
+
+
+class EmojiGameDiceInfo(TLObject):
+    CONSTRUCTOR_ID = 0x44e56023
+    SUBCLASS_OF_ID = 0x64b3022
+
+    def __init__(self, game_hash: str, prev_stake: int, current_streak: int, params: List[int], plays_left: Optional[int]=None):
+        """
+        Constructor for messages.EmojiGameInfo: Instance of either EmojiGameUnavailable, EmojiGameDiceInfo.
+        """
+        self.game_hash = game_hash
+        self.prev_stake = prev_stake
+        self.current_streak = current_streak
+        self.params = params
+        self.plays_left = plays_left
+
+    def to_dict(self):
+        return {
+            '_': 'EmojiGameDiceInfo',
+            'game_hash': self.game_hash,
+            'prev_stake': self.prev_stake,
+            'current_streak': self.current_streak,
+            'params': [] if self.params is None else self.params[:],
+            'plays_left': self.plays_left
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'#`\xe5D',
+            struct.pack('<I', (0 if self.plays_left is None or self.plays_left is False else 1)),
+            self.serialize_bytes(self.game_hash),
+            struct.pack('<q', self.prev_stake),
+            struct.pack('<i', self.current_streak),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.params)),b''.join(struct.pack('<i', x) for x in self.params),
+            b'' if self.plays_left is None or self.plays_left is False else (struct.pack('<i', self.plays_left)),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _game_hash = reader.tgread_string()
+        _prev_stake = reader.read_long()
+        _current_streak = reader.read_int()
+        reader.read_int()
+        _params = []
+        for _ in range(reader.read_int()):
+            _x = reader.read_int()
+            _params.append(_x)
+
+        if flags & 1:
+            _plays_left = reader.read_int()
+        else:
+            _plays_left = None
+        return cls(game_hash=_game_hash, prev_stake=_prev_stake, current_streak=_current_streak, params=_params, plays_left=_plays_left)
+
+
+class EmojiGameOutcome(TLObject):
+    CONSTRUCTOR_ID = 0xda2ad647
+    SUBCLASS_OF_ID = 0xef75569
+
+    def __init__(self, seed: bytes, stake_ton_amount: int, ton_amount: int):
+        """
+        Constructor for messages.EmojiGameOutcome: Instance of EmojiGameOutcome.
+        """
+        self.seed = seed
+        self.stake_ton_amount = stake_ton_amount
+        self.ton_amount = ton_amount
+
+    def to_dict(self):
+        return {
+            '_': 'EmojiGameOutcome',
+            'seed': self.seed,
+            'stake_ton_amount': self.stake_ton_amount,
+            'ton_amount': self.ton_amount
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'G\xd6*\xda',
+            self.serialize_bytes(self.seed),
+            struct.pack('<q', self.stake_ton_amount),
+            struct.pack('<q', self.ton_amount),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _seed = reader.tgread_bytes()
+        _stake_ton_amount = reader.read_long()
+        _ton_amount = reader.read_long()
+        return cls(seed=_seed, stake_ton_amount=_stake_ton_amount, ton_amount=_ton_amount)
+
+
+class EmojiGameUnavailable(TLObject):
+    CONSTRUCTOR_ID = 0x59e65335
+    SUBCLASS_OF_ID = 0x64b3022
+
+    def to_dict(self):
+        return {
+            '_': 'EmojiGameUnavailable'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'5S\xe6Y',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
 
 
 class EmojiGroups(TLObject):
@@ -2076,14 +2321,15 @@ class MessageViews(TLObject):
 
 
 class Messages(TLObject):
-    CONSTRUCTOR_ID = 0x8c718e87
+    CONSTRUCTOR_ID = 0x1d73e7ea
     SUBCLASS_OF_ID = 0xd4b40b5e
 
-    def __init__(self, messages: List['TypeMessage'], chats: List['TypeChat'], users: List['TypeUser']):
+    def __init__(self, messages: List['TypeMessage'], topics: List['TypeForumTopic'], chats: List['TypeChat'], users: List['TypeUser']):
         """
         Constructor for messages.Messages: Instance of either Messages, MessagesSlice, ChannelMessages, MessagesNotModified.
         """
         self.messages = messages
+        self.topics = topics
         self.chats = chats
         self.users = users
 
@@ -2091,14 +2337,16 @@ class Messages(TLObject):
         return {
             '_': 'Messages',
             'messages': [] if self.messages is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.messages],
+            'topics': [] if self.topics is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.topics],
             'chats': [] if self.chats is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.chats],
             'users': [] if self.users is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.users]
         }
 
     def _bytes(self):
         return b''.join((
-            b'\x87\x8eq\x8c',
+            b'\xea\xe7s\x1d',
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.messages)),b''.join(x._bytes() for x in self.messages),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.topics)),b''.join(x._bytes() for x in self.topics),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.chats)),b''.join(x._bytes() for x in self.chats),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.users)),b''.join(x._bytes() for x in self.users),
         ))
@@ -2112,6 +2360,12 @@ class Messages(TLObject):
             _messages.append(_x)
 
         reader.read_int()
+        _topics = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _topics.append(_x)
+
+        reader.read_int()
         _chats = []
         for _ in range(reader.read_int()):
             _x = reader.tgread_object()
@@ -2123,7 +2377,7 @@ class Messages(TLObject):
             _x = reader.tgread_object()
             _users.append(_x)
 
-        return cls(messages=_messages, chats=_chats, users=_users)
+        return cls(messages=_messages, topics=_topics, chats=_chats, users=_users)
 
 
 class MessagesNotModified(TLObject):
@@ -2155,41 +2409,47 @@ class MessagesNotModified(TLObject):
 
 
 class MessagesSlice(TLObject):
-    CONSTRUCTOR_ID = 0x3a54685e
+    CONSTRUCTOR_ID = 0x5f206716
     SUBCLASS_OF_ID = 0xd4b40b5e
 
-    def __init__(self, count: int, messages: List['TypeMessage'], chats: List['TypeChat'], users: List['TypeUser'], inexact: Optional[bool]=None, next_rate: Optional[int]=None, offset_id_offset: Optional[int]=None):
+    def __init__(self, count: int, messages: List['TypeMessage'], topics: List['TypeForumTopic'], chats: List['TypeChat'], users: List['TypeUser'], inexact: Optional[bool]=None, next_rate: Optional[int]=None, offset_id_offset: Optional[int]=None, search_flood: Optional['TypeSearchPostsFlood']=None):
         """
         Constructor for messages.Messages: Instance of either Messages, MessagesSlice, ChannelMessages, MessagesNotModified.
         """
         self.count = count
         self.messages = messages
+        self.topics = topics
         self.chats = chats
         self.users = users
         self.inexact = inexact
         self.next_rate = next_rate
         self.offset_id_offset = offset_id_offset
+        self.search_flood = search_flood
 
     def to_dict(self):
         return {
             '_': 'MessagesSlice',
             'count': self.count,
             'messages': [] if self.messages is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.messages],
+            'topics': [] if self.topics is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.topics],
             'chats': [] if self.chats is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.chats],
             'users': [] if self.users is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.users],
             'inexact': self.inexact,
             'next_rate': self.next_rate,
-            'offset_id_offset': self.offset_id_offset
+            'offset_id_offset': self.offset_id_offset,
+            'search_flood': self.search_flood.to_dict() if isinstance(self.search_flood, TLObject) else self.search_flood
         }
 
     def _bytes(self):
         return b''.join((
-            b'^hT:',
-            struct.pack('<I', (0 if self.inexact is None or self.inexact is False else 2) | (0 if self.next_rate is None or self.next_rate is False else 1) | (0 if self.offset_id_offset is None or self.offset_id_offset is False else 4)),
+            b'\x16g _',
+            struct.pack('<I', (0 if self.inexact is None or self.inexact is False else 2) | (0 if self.next_rate is None or self.next_rate is False else 1) | (0 if self.offset_id_offset is None or self.offset_id_offset is False else 4) | (0 if self.search_flood is None or self.search_flood is False else 8)),
             struct.pack('<i', self.count),
             b'' if self.next_rate is None or self.next_rate is False else (struct.pack('<i', self.next_rate)),
             b'' if self.offset_id_offset is None or self.offset_id_offset is False else (struct.pack('<i', self.offset_id_offset)),
+            b'' if self.search_flood is None or self.search_flood is False else (self.search_flood._bytes()),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.messages)),b''.join(x._bytes() for x in self.messages),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.topics)),b''.join(x._bytes() for x in self.topics),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.chats)),b''.join(x._bytes() for x in self.chats),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.users)),b''.join(x._bytes() for x in self.users),
         ))
@@ -2208,11 +2468,21 @@ class MessagesSlice(TLObject):
             _offset_id_offset = reader.read_int()
         else:
             _offset_id_offset = None
+        if flags & 8:
+            _search_flood = reader.tgread_object()
+        else:
+            _search_flood = None
         reader.read_int()
         _messages = []
         for _ in range(reader.read_int()):
             _x = reader.tgread_object()
             _messages.append(_x)
+
+        reader.read_int()
+        _topics = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _topics.append(_x)
 
         reader.read_int()
         _chats = []
@@ -2226,7 +2496,7 @@ class MessagesSlice(TLObject):
             _x = reader.tgread_object()
             _users.append(_x)
 
-        return cls(count=_count, messages=_messages, chats=_chats, users=_users, inexact=_inexact, next_rate=_next_rate, offset_id_offset=_offset_id_offset)
+        return cls(count=_count, messages=_messages, topics=_topics, chats=_chats, users=_users, inexact=_inexact, next_rate=_next_rate, offset_id_offset=_offset_id_offset, search_flood=_search_flood)
 
 
 class MyStickers(TLObject):
@@ -3124,10 +3394,10 @@ class SentEncryptedMessage(TLObject):
 
 
 class SponsoredMessages(TLObject):
-    CONSTRUCTOR_ID = 0xc9ee1d87
+    CONSTRUCTOR_ID = 0xffda656d
     SUBCLASS_OF_ID = 0x7f4169e0
 
-    def __init__(self, messages: List['TypeSponsoredMessage'], chats: List['TypeChat'], users: List['TypeUser'], posts_between: Optional[int]=None):
+    def __init__(self, messages: List['TypeSponsoredMessage'], chats: List['TypeChat'], users: List['TypeUser'], posts_between: Optional[int]=None, start_delay: Optional[int]=None, between_delay: Optional[int]=None):
         """
         Constructor for messages.SponsoredMessages: Instance of either SponsoredMessages, SponsoredMessagesEmpty.
         """
@@ -3135,6 +3405,8 @@ class SponsoredMessages(TLObject):
         self.chats = chats
         self.users = users
         self.posts_between = posts_between
+        self.start_delay = start_delay
+        self.between_delay = between_delay
 
     def to_dict(self):
         return {
@@ -3142,14 +3414,18 @@ class SponsoredMessages(TLObject):
             'messages': [] if self.messages is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.messages],
             'chats': [] if self.chats is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.chats],
             'users': [] if self.users is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.users],
-            'posts_between': self.posts_between
+            'posts_between': self.posts_between,
+            'start_delay': self.start_delay,
+            'between_delay': self.between_delay
         }
 
     def _bytes(self):
         return b''.join((
-            b'\x87\x1d\xee\xc9',
-            struct.pack('<I', (0 if self.posts_between is None or self.posts_between is False else 1)),
+            b'me\xda\xff',
+            struct.pack('<I', (0 if self.posts_between is None or self.posts_between is False else 1) | (0 if self.start_delay is None or self.start_delay is False else 2) | (0 if self.between_delay is None or self.between_delay is False else 4)),
             b'' if self.posts_between is None or self.posts_between is False else (struct.pack('<i', self.posts_between)),
+            b'' if self.start_delay is None or self.start_delay is False else (struct.pack('<i', self.start_delay)),
+            b'' if self.between_delay is None or self.between_delay is False else (struct.pack('<i', self.between_delay)),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.messages)),b''.join(x._bytes() for x in self.messages),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.chats)),b''.join(x._bytes() for x in self.chats),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.users)),b''.join(x._bytes() for x in self.users),
@@ -3163,6 +3439,14 @@ class SponsoredMessages(TLObject):
             _posts_between = reader.read_int()
         else:
             _posts_between = None
+        if flags & 2:
+            _start_delay = reader.read_int()
+        else:
+            _start_delay = None
+        if flags & 4:
+            _between_delay = reader.read_int()
+        else:
+            _between_delay = None
         reader.read_int()
         _messages = []
         for _ in range(reader.read_int()):
@@ -3181,7 +3465,7 @@ class SponsoredMessages(TLObject):
             _x = reader.tgread_object()
             _users.append(_x)
 
-        return cls(messages=_messages, chats=_chats, users=_users, posts_between=_posts_between)
+        return cls(messages=_messages, chats=_chats, users=_users, posts_between=_posts_between, start_delay=_start_delay, between_delay=_between_delay)
 
 
 class SponsoredMessagesEmpty(TLObject):
@@ -3471,6 +3755,39 @@ class TranslateResult(TLObject):
         return cls(result=_result)
 
 
+class TranslatedRichMessage(TLObject):
+    CONSTRUCTOR_ID = 0x4203998f
+    SUBCLASS_OF_ID = 0xbfb188f6
+
+    def __init__(self, result: List['TypeRichMessage']):
+        """
+        Constructor for messages.TranslatedRichMessage: Instance of TranslatedRichMessage.
+        """
+        self.result = result
+
+    def to_dict(self):
+        return {
+            '_': 'TranslatedRichMessage',
+            'result': [] if self.result is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.result]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x8f\x99\x03B',
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.result)),b''.join(x._bytes() for x in self.result),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        reader.read_int()
+        _result = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _result.append(_x)
+
+        return cls(result=_result)
+
+
 class VotesList(TLObject):
     CONSTRUCTOR_ID = 0x4899484e
     SUBCLASS_OF_ID = 0xc2199885
@@ -3583,27 +3900,30 @@ class WebPage(TLObject):
 
 
 class WebPagePreview(TLObject):
-    CONSTRUCTOR_ID = 0xb53e8b21
+    CONSTRUCTOR_ID = 0x8c9a88ac
     SUBCLASS_OF_ID = 0xe29410c2
 
-    def __init__(self, media: 'TypeMessageMedia', users: List['TypeUser']):
+    def __init__(self, media: 'TypeMessageMedia', chats: List['TypeChat'], users: List['TypeUser']):
         """
         Constructor for messages.WebPagePreview: Instance of WebPagePreview.
         """
         self.media = media
+        self.chats = chats
         self.users = users
 
     def to_dict(self):
         return {
             '_': 'WebPagePreview',
             'media': self.media.to_dict() if isinstance(self.media, TLObject) else self.media,
+            'chats': [] if self.chats is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.chats],
             'users': [] if self.users is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.users]
         }
 
     def _bytes(self):
         return b''.join((
-            b'!\x8b>\xb5',
+            b'\xac\x88\x9a\x8c',
             self.media._bytes(),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.chats)),b''.join(x._bytes() for x in self.chats),
             b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.users)),b''.join(x._bytes() for x in self.users),
         ))
 
@@ -3611,10 +3931,16 @@ class WebPagePreview(TLObject):
     def from_reader(cls, reader):
         _media = reader.tgread_object()
         reader.read_int()
+        _chats = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _chats.append(_x)
+
+        reader.read_int()
         _users = []
         for _ in range(reader.read_int()):
             _x = reader.tgread_object()
             _users.append(_x)
 
-        return cls(media=_media, users=_users)
+        return cls(media=_media, chats=_chats, users=_users)
 

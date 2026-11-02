@@ -96,7 +96,8 @@ class MessageButton:
         this value a lot quickly may not work as expected. You may also pass a
         :tl:`InputGeoPoint` if you find the order confusing.
         """
-        if isinstance(self.button, types.KeyboardButton):
+        if (isinstance(self.button, types.KeyboardButton)
+                and isinstance(self.button.type, types.ButtonTypeDefault)):
             return await self._client.send_message(
                 self._chat, self.button.text, parse_mode=None)
         elif isinstance(self.button, types.KeyboardButtonCallback):

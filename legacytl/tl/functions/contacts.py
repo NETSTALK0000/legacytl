@@ -6,7 +6,7 @@ import os
 import struct
 from datetime import datetime
 if TYPE_CHECKING:
-    from ...tl.types import TypeInputContact, TypeInputGeoPoint, TypeInputPeer, TypeInputUser, TypeTopPeerCategory
+    from ...tl.types import TypeInputContact, TypeInputGeoPoint, TypeInputPeer, TypeInputUser, TypeTextWithEntities, TypeTopPeerCategory
 
 
 
@@ -42,10 +42,10 @@ class AcceptContactRequest(TLRequest):
 
 
 class AddContactRequest(TLRequest):
-    CONSTRUCTOR_ID = 0xe8f463d0
+    CONSTRUCTOR_ID = 0xd9ba2e54
     SUBCLASS_OF_ID = 0x8af52aac
 
-    def __init__(self, id: 'TypeInputUser', first_name: str, last_name: str, phone: str, add_phone_privacy_exception: Optional[bool]=None):
+    def __init__(self, id: 'TypeInputUser', first_name: str, last_name: str, phone: str, add_phone_privacy_exception: Optional[bool]=None, note: Optional['TypeTextWithEntities']=None):
         """
         :returns Updates: Instance of either UpdatesTooLong, UpdateShortMessage, UpdateShortChatMessage, UpdateShort, UpdatesCombined, Updates, UpdateShortSentMessage.
         """
@@ -54,6 +54,7 @@ class AddContactRequest(TLRequest):
         self.last_name = last_name
         self.phone = phone
         self.add_phone_privacy_exception = add_phone_privacy_exception
+        self.note = note
 
     async def resolve(self, client, utils):
         self.id = utils.get_input_user(await client.get_input_entity(self.id))
@@ -65,17 +66,19 @@ class AddContactRequest(TLRequest):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'phone': self.phone,
-            'add_phone_privacy_exception': self.add_phone_privacy_exception
+            'add_phone_privacy_exception': self.add_phone_privacy_exception,
+            'note': self.note.to_dict() if isinstance(self.note, TLObject) else self.note
         }
 
     def _bytes(self):
         return b''.join((
-            b'\xd0c\xf4\xe8',
-            struct.pack('<I', (0 if self.add_phone_privacy_exception is None or self.add_phone_privacy_exception is False else 1)),
+            b'T.\xba\xd9',
+            struct.pack('<I', (0 if self.add_phone_privacy_exception is None or self.add_phone_privacy_exception is False else 1) | (0 if self.note is None or self.note is False else 2)),
             self.id._bytes(),
             self.serialize_bytes(self.first_name),
             self.serialize_bytes(self.last_name),
             self.serialize_bytes(self.phone),
+            b'' if self.note is None or self.note is False else (self.note._bytes()),
         ))
 
     @classmethod
@@ -87,7 +90,11 @@ class AddContactRequest(TLRequest):
         _first_name = reader.tgread_string()
         _last_name = reader.tgread_string()
         _phone = reader.tgread_string()
-        return cls(id=_id, first_name=_first_name, last_name=_last_name, phone=_phone, add_phone_privacy_exception=_add_phone_privacy_exception)
+        if flags & 2:
+            _note = reader.tgread_object()
+        else:
+            _note = None
+        return cls(id=_id, first_name=_first_name, last_name=_last_name, phone=_phone, add_phone_privacy_exception=_add_phone_privacy_exception, note=_note)
 
 
 class BlockRequest(TLRequest):
@@ -290,6 +297,39 @@ class ExportContactTokenRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         return cls()
+
+
+class ExportNoPaidMessagesTokenRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x83c586ae
+    SUBCLASS_OF_ID = 0xa13294f0
+
+    def __init__(self, revoke: Optional[bool]=None, temporary: Optional[bool]=None):
+        """
+        :returns ExportedNoPaidMessagesToken: Instance of ExportedNoPaidMessagesToken.
+        """
+        self.revoke = revoke
+        self.temporary = temporary
+
+    def to_dict(self):
+        return {
+            '_': 'ExportNoPaidMessagesTokenRequest',
+            'revoke': self.revoke,
+            'temporary': self.temporary
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xae\x86\xc5\x83',
+            struct.pack('<I', (0 if self.revoke is None or self.revoke is False else 1) | (0 if self.temporary is None or self.temporary is False else 2)),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _revoke = bool(flags & 1)
+        _temporary = bool(flags & 2)
+        return cls(revoke=_revoke, temporary=_temporary)
 
 
 class GetBirthdaysRequest(TLRequest):
@@ -521,7 +561,7 @@ class GetTopPeersRequest(TLRequest):
     CONSTRUCTOR_ID = 0x973478b6
     SUBCLASS_OF_ID = 0x9ee8bb88
 
-    def __init__(self, offset: int, limit: int, hash: int, correspondents: Optional[bool]=None, bots_pm: Optional[bool]=None, bots_inline: Optional[bool]=None, phone_calls: Optional[bool]=None, forward_users: Optional[bool]=None, forward_chats: Optional[bool]=None, groups: Optional[bool]=None, channels: Optional[bool]=None, bots_app: Optional[bool]=None):
+    def __init__(self, offset: int, limit: int, hash: int, correspondents: Optional[bool]=None, bots_pm: Optional[bool]=None, bots_inline: Optional[bool]=None, phone_calls: Optional[bool]=None, forward_users: Optional[bool]=None, forward_chats: Optional[bool]=None, groups: Optional[bool]=None, channels: Optional[bool]=None, bots_app: Optional[bool]=None, bots_guestchat: Optional[bool]=None):
         """
         :returns contacts.TopPeers: Instance of either TopPeersNotModified, TopPeers, TopPeersDisabled.
         """
@@ -537,6 +577,7 @@ class GetTopPeersRequest(TLRequest):
         self.groups = groups
         self.channels = channels
         self.bots_app = bots_app
+        self.bots_guestchat = bots_guestchat
 
     def to_dict(self):
         return {
@@ -552,13 +593,14 @@ class GetTopPeersRequest(TLRequest):
             'forward_chats': self.forward_chats,
             'groups': self.groups,
             'channels': self.channels,
-            'bots_app': self.bots_app
+            'bots_app': self.bots_app,
+            'bots_guestchat': self.bots_guestchat
         }
 
     def _bytes(self):
         return b''.join((
             b'\xb6x4\x97',
-            struct.pack('<I', (0 if self.correspondents is None or self.correspondents is False else 1) | (0 if self.bots_pm is None or self.bots_pm is False else 2) | (0 if self.bots_inline is None or self.bots_inline is False else 4) | (0 if self.phone_calls is None or self.phone_calls is False else 8) | (0 if self.forward_users is None or self.forward_users is False else 16) | (0 if self.forward_chats is None or self.forward_chats is False else 32) | (0 if self.groups is None or self.groups is False else 1024) | (0 if self.channels is None or self.channels is False else 32768) | (0 if self.bots_app is None or self.bots_app is False else 65536)),
+            struct.pack('<I', (0 if self.correspondents is None or self.correspondents is False else 1) | (0 if self.bots_pm is None or self.bots_pm is False else 2) | (0 if self.bots_inline is None or self.bots_inline is False else 4) | (0 if self.phone_calls is None or self.phone_calls is False else 8) | (0 if self.forward_users is None or self.forward_users is False else 16) | (0 if self.forward_chats is None or self.forward_chats is False else 32) | (0 if self.groups is None or self.groups is False else 1024) | (0 if self.channels is None or self.channels is False else 32768) | (0 if self.bots_app is None or self.bots_app is False else 65536) | (0 if self.bots_guestchat is None or self.bots_guestchat is False else 131072)),
             struct.pack('<i', self.offset),
             struct.pack('<i', self.limit),
             struct.pack('<q', self.hash),
@@ -577,10 +619,11 @@ class GetTopPeersRequest(TLRequest):
         _groups = bool(flags & 1024)
         _channels = bool(flags & 32768)
         _bots_app = bool(flags & 65536)
+        _bots_guestchat = bool(flags & 131072)
         _offset = reader.read_int()
         _limit = reader.read_int()
         _hash = reader.read_long()
-        return cls(offset=_offset, limit=_limit, hash=_hash, correspondents=_correspondents, bots_pm=_bots_pm, bots_inline=_bots_inline, phone_calls=_phone_calls, forward_users=_forward_users, forward_chats=_forward_chats, groups=_groups, channels=_channels, bots_app=_bots_app)
+        return cls(offset=_offset, limit=_limit, hash=_hash, correspondents=_correspondents, bots_pm=_bots_pm, bots_inline=_bots_inline, phone_calls=_phone_calls, forward_users=_forward_users, forward_chats=_forward_chats, groups=_groups, channels=_channels, bots_app=_bots_app, bots_guestchat=_bots_guestchat)
 
 
 class ImportContactTokenRequest(TLRequest):
@@ -642,6 +685,41 @@ class ImportContactsRequest(TLRequest):
             _contacts.append(_x)
 
         return cls(contacts=_contacts)
+
+
+class ImportNoPaidMessagesTokenRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x35a7c6ca
+    SUBCLASS_OF_ID = 0x2da17977
+
+    def __init__(self, user_id: 'TypeInputUser', token: str):
+        """
+        :returns User: Instance of either UserEmpty, User.
+        """
+        self.user_id = user_id
+        self.token = token
+
+    async def resolve(self, client, utils):
+        self.user_id = utils.get_input_user(await client.get_input_entity(self.user_id))
+
+    def to_dict(self):
+        return {
+            '_': 'ImportNoPaidMessagesTokenRequest',
+            'user_id': self.user_id.to_dict() if isinstance(self.user_id, TLObject) else self.user_id,
+            'token': self.token
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xca\xc6\xa75',
+            self.user_id._bytes(),
+            self.serialize_bytes(self.token),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _user_id = reader.tgread_object()
+        _token = reader.tgread_string()
+        return cls(user_id=_user_id, token=_token)
 
 
 class ResetSavedRequest(TLRequest):
@@ -765,35 +843,44 @@ class ResolveUsernameRequest(TLRequest):
 
 
 class SearchRequest(TLRequest):
-    CONSTRUCTOR_ID = 0x11f812d8
+    CONSTRUCTOR_ID = 0x5f58d0f
     SUBCLASS_OF_ID = 0x4386a2e3
 
-    def __init__(self, q: str, limit: int):
+    def __init__(self, q: str, limit: int, broadcasts: Optional[bool]=None, bots: Optional[bool]=None):
         """
         :returns contacts.Found: Instance of Found.
         """
         self.q = q
         self.limit = limit
+        self.broadcasts = broadcasts
+        self.bots = bots
 
     def to_dict(self):
         return {
             '_': 'SearchRequest',
             'q': self.q,
-            'limit': self.limit
+            'limit': self.limit,
+            'broadcasts': self.broadcasts,
+            'bots': self.bots
         }
 
     def _bytes(self):
         return b''.join((
-            b'\xd8\x12\xf8\x11',
+            b'\x0f\x8d\xf5\x05',
+            struct.pack('<I', (0 if self.broadcasts is None or self.broadcasts is False else 1) | (0 if self.bots is None or self.bots is False else 2)),
             self.serialize_bytes(self.q),
             struct.pack('<i', self.limit),
         ))
 
     @classmethod
     def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _broadcasts = bool(flags & 1)
+        _bots = bool(flags & 2)
         _q = reader.tgread_string()
         _limit = reader.read_int()
-        return cls(q=_q, limit=_limit)
+        return cls(q=_q, limit=_limit, broadcasts=_broadcasts, bots=_bots)
 
 
 class SetBlockedRequest(TLRequest):
@@ -909,4 +996,39 @@ class UnblockRequest(TLRequest):
         _my_stories_from = bool(flags & 1)
         _id = reader.tgread_object()
         return cls(id=_id, my_stories_from=_my_stories_from)
+
+
+class UpdateContactNoteRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x139f63fb
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, id: 'TypeInputUser', note: 'TypeTextWithEntities'):
+        """
+        :returns Bool: This type has no constructors.
+        """
+        self.id = id
+        self.note = note
+
+    async def resolve(self, client, utils):
+        self.id = utils.get_input_user(await client.get_input_entity(self.id))
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateContactNoteRequest',
+            'id': self.id.to_dict() if isinstance(self.id, TLObject) else self.id,
+            'note': self.note.to_dict() if isinstance(self.note, TLObject) else self.note
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xfbc\x9f\x13',
+            self.id._bytes(),
+            self.note._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _id = reader.tgread_object()
+        _note = reader.tgread_object()
+        return cls(id=_id, note=_note)
 

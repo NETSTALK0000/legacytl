@@ -81,18 +81,20 @@ class ButtonMethods:
                 is_inline |= inline
                 is_normal |= not inline
 
-                if button.SUBCLASS_OF_ID == 0xbad74a3:  # crc32(b'KeyboardButton')
+                # crc32(b'KeyboardButton') / crc32(b'KeyboardInlineButton')
+                if button.SUBCLASS_OF_ID in (0xbad74a3, 0x463a75a2):
                     current.append(button)
 
             if current:
-                rows.append(types.KeyboardButtonRow(current))
+                rows.append(current)
 
         if is_inline and is_normal:
             raise ValueError('You cannot mix inline with normal buttons')
         elif is_inline:
-            return types.ReplyInlineMarkup(rows)
+            return types.ReplyInlineMarkup(
+                [types.KeyboardInlineButtonRow(r) for r in rows])
         return types.ReplyKeyboardMarkup(
-            rows=rows,
+            rows=[types.KeyboardButtonRow(r) for r in rows],
             resize=resize,
             single_use=single_use,
             selective=selective,

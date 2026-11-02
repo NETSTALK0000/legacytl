@@ -5,7 +5,7 @@ import os
 import struct
 from datetime import datetime
 if TYPE_CHECKING:
-    from ...tl.types import TypeAuthorization, TypeAutoDownloadSettings, TypeAutoSaveException, TypeAutoSaveSettings, TypeBusinessChatLink, TypeChat, TypeConnectedBot, TypeDocument, TypeEmojiStatus, TypeMessageEntity, TypePasswordKdfAlgo, TypePeer, TypePrivacyRule, TypeSecurePasswordKdfAlgo, TypeSecureRequiredType, TypeSecureSecretSettings, TypeSecureValue, TypeSecureValueError, TypeTheme, TypeUser, TypeWallPaper, TypeWebAuthorization
+    from ...tl.types import TypeAuthorization, TypeAutoDownloadSettings, TypeAutoSaveException, TypeAutoSaveSettings, TypeBusinessChatLink, TypeChat, TypeChatTheme, TypeConnectedBot, TypeDataJSON, TypeDocument, TypeEmojiStatus, TypeMessageEntity, TypePasskey, TypePasswordKdfAlgo, TypePeer, TypePrivacyRule, TypeSecurePasswordKdfAlgo, TypeSecureRequiredType, TypeSecureSecretSettings, TypeSecureValue, TypeSecureValueError, TypeTheme, TypeUser, TypeWallPaper, TypeWebAuthorization, TypeWebDomainException
     from ...tl.types.auth import TypeSentCode
 
 
@@ -268,6 +268,90 @@ class BusinessChatLinks(TLObject):
         return cls(links=_links, chats=_chats, users=_users)
 
 
+class ChatThemes(TLObject):
+    CONSTRUCTOR_ID = 0xbe098173
+    SUBCLASS_OF_ID = 0x15c14aa8
+
+    def __init__(self, hash: int, themes: List['TypeChatTheme'], chats: List['TypeChat'], users: List['TypeUser'], next_offset: Optional[str]=None):
+        """
+        Constructor for account.ChatThemes: Instance of either ChatThemesNotModified, ChatThemes.
+        """
+        self.hash = hash
+        self.themes = themes
+        self.chats = chats
+        self.users = users
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'ChatThemes',
+            'hash': self.hash,
+            'themes': [] if self.themes is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.themes],
+            'chats': [] if self.chats is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.chats],
+            'users': [] if self.users is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.users],
+            'next_offset': self.next_offset
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b's\x81\t\xbe',
+            struct.pack('<I', (0 if self.next_offset is None or self.next_offset is False else 1)),
+            struct.pack('<q', self.hash),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.themes)),b''.join(x._bytes() for x in self.themes),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.chats)),b''.join(x._bytes() for x in self.chats),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.users)),b''.join(x._bytes() for x in self.users),
+            b'' if self.next_offset is None or self.next_offset is False else (self.serialize_bytes(self.next_offset)),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _hash = reader.read_long()
+        reader.read_int()
+        _themes = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _themes.append(_x)
+
+        reader.read_int()
+        _chats = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _chats.append(_x)
+
+        reader.read_int()
+        _users = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _users.append(_x)
+
+        if flags & 1:
+            _next_offset = reader.tgread_string()
+        else:
+            _next_offset = None
+        return cls(hash=_hash, themes=_themes, chats=_chats, users=_users, next_offset=_next_offset)
+
+
+class ChatThemesNotModified(TLObject):
+    CONSTRUCTOR_ID = 0xe011e1c4
+    SUBCLASS_OF_ID = 0x15c14aa8
+
+    def to_dict(self):
+        return {
+            '_': 'ChatThemesNotModified'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xc4\xe1\x11\xe0',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
+
+
 class ConnectedBots(TLObject):
     CONSTRUCTOR_ID = 0x17d7f87b
     SUBCLASS_OF_ID = 0xe4caf7d3
@@ -485,6 +569,67 @@ class PaidMessagesRevenue(TLObject):
     def from_reader(cls, reader):
         _stars_amount = reader.read_long()
         return cls(stars_amount=_stars_amount)
+
+
+class PasskeyRegistrationOptions(TLObject):
+    CONSTRUCTOR_ID = 0xe16b5ce1
+    SUBCLASS_OF_ID = 0x341d83e4
+
+    def __init__(self, options: 'TypeDataJSON'):
+        """
+        Constructor for account.PasskeyRegistrationOptions: Instance of PasskeyRegistrationOptions.
+        """
+        self.options = options
+
+    def to_dict(self):
+        return {
+            '_': 'PasskeyRegistrationOptions',
+            'options': self.options.to_dict() if isinstance(self.options, TLObject) else self.options
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xe1\\k\xe1',
+            self.options._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _options = reader.tgread_object()
+        return cls(options=_options)
+
+
+class Passkeys(TLObject):
+    CONSTRUCTOR_ID = 0xf8e0aa1c
+    SUBCLASS_OF_ID = 0x24dd205e
+
+    def __init__(self, passkeys: List['TypePasskey']):
+        """
+        Constructor for account.Passkeys: Instance of Passkeys.
+        """
+        self.passkeys = passkeys
+
+    def to_dict(self):
+        return {
+            '_': 'Passkeys',
+            'passkeys': [] if self.passkeys is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.passkeys]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x1c\xaa\xe0\xf8',
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.passkeys)),b''.join(x._bytes() for x in self.passkeys),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        reader.read_int()
+        _passkeys = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _passkeys.append(_x)
+
+        return cls(passkeys=_passkeys)
 
 
 class Password(TLObject):
@@ -880,6 +1025,58 @@ class ResolvedBusinessChatLinks(TLObject):
         return cls(peer=_peer, message=_message, chats=_chats, users=_users, entities=_entities)
 
 
+class SavedMusicIds(TLObject):
+    CONSTRUCTOR_ID = 0x998d6636
+    SUBCLASS_OF_ID = 0x4b4af692
+
+    def __init__(self, ids: List[int]):
+        """
+        Constructor for account.SavedMusicIds: Instance of either SavedMusicIdsNotModified, SavedMusicIds.
+        """
+        self.ids = ids
+
+    def to_dict(self):
+        return {
+            '_': 'SavedMusicIds',
+            'ids': [] if self.ids is None else self.ids[:]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'6f\x8d\x99',
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.ids)),b''.join(struct.pack('<q', x) for x in self.ids),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        reader.read_int()
+        _ids = []
+        for _ in range(reader.read_int()):
+            _x = reader.read_long()
+            _ids.append(_x)
+
+        return cls(ids=_ids)
+
+
+class SavedMusicIdsNotModified(TLObject):
+    CONSTRUCTOR_ID = 0x4fc81d6e
+    SUBCLASS_OF_ID = 0x4b4af692
+
+    def to_dict(self):
+        return {
+            '_': 'SavedMusicIdsNotModified'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'n\x1d\xc8O',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
+
+
 class SavedRingtone(TLObject):
     CONSTRUCTOR_ID = 0xb7263f6d
     SUBCLASS_OF_ID = 0xb1e28424
@@ -1227,4 +1424,78 @@ class WebAuthorizations(TLObject):
             _users.append(_x)
 
         return cls(authorizations=_authorizations, users=_users)
+
+
+class WebBrowserSettings(TLObject):
+    CONSTRUCTOR_ID = 0x79eb8cb3
+    SUBCLASS_OF_ID = 0x44799578
+
+    def __init__(self, external_exceptions: List['TypeWebDomainException'], inapp_exceptions: List['TypeWebDomainException'], hash: int, open_external_browser: Optional[bool]=None, display_close_button: Optional[bool]=None):
+        """
+        Constructor for account.WebBrowserSettings: Instance of either WebBrowserSettingsNotModified, WebBrowserSettings.
+        """
+        self.external_exceptions = external_exceptions
+        self.inapp_exceptions = inapp_exceptions
+        self.hash = hash
+        self.open_external_browser = open_external_browser
+        self.display_close_button = display_close_button
+
+    def to_dict(self):
+        return {
+            '_': 'WebBrowserSettings',
+            'external_exceptions': [] if self.external_exceptions is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.external_exceptions],
+            'inapp_exceptions': [] if self.inapp_exceptions is None else [x.to_dict() if isinstance(x, TLObject) else x for x in self.inapp_exceptions],
+            'hash': self.hash,
+            'open_external_browser': self.open_external_browser,
+            'display_close_button': self.display_close_button
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xb3\x8c\xeby',
+            struct.pack('<I', (0 if self.open_external_browser is None or self.open_external_browser is False else 1) | (0 if self.display_close_button is None or self.display_close_button is False else 2)),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.external_exceptions)),b''.join(x._bytes() for x in self.external_exceptions),
+            b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.inapp_exceptions)),b''.join(x._bytes() for x in self.inapp_exceptions),
+            struct.pack('<q', self.hash),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _open_external_browser = bool(flags & 1)
+        _display_close_button = bool(flags & 2)
+        reader.read_int()
+        _external_exceptions = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _external_exceptions.append(_x)
+
+        reader.read_int()
+        _inapp_exceptions = []
+        for _ in range(reader.read_int()):
+            _x = reader.tgread_object()
+            _inapp_exceptions.append(_x)
+
+        _hash = reader.read_long()
+        return cls(external_exceptions=_external_exceptions, inapp_exceptions=_inapp_exceptions, hash=_hash, open_external_browser=_open_external_browser, display_close_button=_display_close_button)
+
+
+class WebBrowserSettingsNotModified(TLObject):
+    CONSTRUCTOR_ID = 0xc31c8f4e
+    SUBCLASS_OF_ID = 0x44799578
+
+    def to_dict(self):
+        return {
+            '_': 'WebBrowserSettingsNotModified'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'N\x8f\x1c\xc3',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
 

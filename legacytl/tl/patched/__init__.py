@@ -1,4 +1,6 @@
 from .. import types, alltlobjects
+from ..custom import _button_compat  # noqa: F401  (layer 232 button names)
+from ..custom import _forum_compat  # noqa: F401  (layer 232 forum methods)
 from ..custom.message import Message as _Message
 
 class MessageEmpty(_Message, types.MessageEmpty):

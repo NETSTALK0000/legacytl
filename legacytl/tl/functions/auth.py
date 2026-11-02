@@ -6,7 +6,7 @@ import os
 import struct
 from datetime import datetime
 if TYPE_CHECKING:
-    from ...tl.types import TypeCodeSettings, TypeEmailVerification, TypeInputCheckPasswordSRP
+    from ...tl.types import TypeCodeSettings, TypeEmailVerification, TypeInputCheckPasswordSRP, TypeInputPasskeyCredential
     from ...tl.types.account import TypePasswordInputSettings
 
 
@@ -109,6 +109,70 @@ class CancelCodeRequest(TLRequest):
         _phone_number = reader.tgread_string()
         _phone_code_hash = reader.tgread_string()
         return cls(phone_number=_phone_number, phone_code_hash=_phone_code_hash)
+
+
+class CancelWebTokenAuthorizationRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x490dada1
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, web_auth_token: str):
+        """
+        :returns Bool: This type has no constructors.
+        """
+        self.web_auth_token = web_auth_token
+
+    def to_dict(self):
+        return {
+            '_': 'CancelWebTokenAuthorizationRequest',
+            'web_auth_token': self.web_auth_token
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xa1\xad\rI',
+            self.serialize_bytes(self.web_auth_token),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _web_auth_token = reader.tgread_string()
+        return cls(web_auth_token=_web_auth_token)
+
+
+class CheckPaidAuthRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x56e59f9c
+    SUBCLASS_OF_ID = 0x6ce87081
+
+    def __init__(self, phone_number: str, phone_code_hash: str, form_id: int):
+        """
+        :returns auth.SentCode: Instance of either SentCode, SentCodeSuccess, SentCodePaymentRequired.
+        """
+        self.phone_number = phone_number
+        self.phone_code_hash = phone_code_hash
+        self.form_id = form_id
+
+    def to_dict(self):
+        return {
+            '_': 'CheckPaidAuthRequest',
+            'phone_number': self.phone_number,
+            'phone_code_hash': self.phone_code_hash,
+            'form_id': self.form_id
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\x9c\x9f\xe5V',
+            self.serialize_bytes(self.phone_number),
+            self.serialize_bytes(self.phone_code_hash),
+            struct.pack('<q', self.form_id),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _phone_number = reader.tgread_string()
+        _phone_code_hash = reader.tgread_string()
+        _form_id = reader.read_long()
+        return cls(phone_number=_phone_number, phone_code_hash=_phone_code_hash, form_id=_form_id)
 
 
 class CheckPasswordRequest(TLRequest):
@@ -269,6 +333,118 @@ class ExportLoginTokenRequest(TLRequest):
         return cls(api_id=_api_id, api_hash=_api_hash, except_ids=_except_ids)
 
 
+class FinishFirebasePnvLoginRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x2c85094c
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, google_token: str):
+        """
+        :returns auth.Authorization: Instance of either Authorization, AuthorizationSignUpRequired.
+        """
+        self.google_token = google_token
+
+    def to_dict(self):
+        return {
+            '_': 'FinishFirebasePnvLoginRequest',
+            'google_token': self.google_token
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'L\t\x85,',
+            self.serialize_bytes(self.google_token),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _google_token = reader.tgread_string()
+        return cls(google_token=_google_token)
+
+
+class FinishPasskeyLoginRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x9857ad07
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, credential: 'TypeInputPasskeyCredential', from_dc_id: Optional[int]=None, from_auth_key_id: Optional[int]=None):
+        """
+        :returns auth.Authorization: Instance of either Authorization, AuthorizationSignUpRequired.
+        """
+        self.credential = credential
+        self.from_dc_id = from_dc_id
+        self.from_auth_key_id = from_auth_key_id
+
+    def to_dict(self):
+        return {
+            '_': 'FinishPasskeyLoginRequest',
+            'credential': self.credential.to_dict() if isinstance(self.credential, TLObject) else self.credential,
+            'from_dc_id': self.from_dc_id,
+            'from_auth_key_id': self.from_auth_key_id
+        }
+
+    def _bytes(self):
+        assert ((self.from_dc_id or self.from_dc_id is not None) and (self.from_auth_key_id or self.from_auth_key_id is not None)) or ((self.from_dc_id is None or self.from_dc_id is False) and (self.from_auth_key_id is None or self.from_auth_key_id is False)), 'from_dc_id, from_auth_key_id parameters must all be False-y (like None) or all me True-y'
+        return b''.join((
+            b'\x07\xadW\x98',
+            struct.pack('<I', (0 if self.from_dc_id is None or self.from_dc_id is False else 1) | (0 if self.from_auth_key_id is None or self.from_auth_key_id is False else 1)),
+            self.credential._bytes(),
+            b'' if self.from_dc_id is None or self.from_dc_id is False else (struct.pack('<i', self.from_dc_id)),
+            b'' if self.from_auth_key_id is None or self.from_auth_key_id is False else (struct.pack('<q', self.from_auth_key_id)),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _credential = reader.tgread_object()
+        if flags & 1:
+            _from_dc_id = reader.read_int()
+        else:
+            _from_dc_id = None
+        if flags & 1:
+            _from_auth_key_id = reader.read_long()
+        else:
+            _from_auth_key_id = None
+        return cls(credential=_credential, from_dc_id=_from_dc_id, from_auth_key_id=_from_auth_key_id)
+
+
+class FirebasePnvSignUpRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x783f6b56
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, first_name: str, last_name: str, no_joined_notifications: Optional[bool]=None):
+        """
+        :returns auth.Authorization: Instance of either Authorization, AuthorizationSignUpRequired.
+        """
+        self.first_name = first_name
+        self.last_name = last_name
+        self.no_joined_notifications = no_joined_notifications
+
+    def to_dict(self):
+        return {
+            '_': 'FirebasePnvSignUpRequest',
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'no_joined_notifications': self.no_joined_notifications
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'Vk?x',
+            struct.pack('<I', (0 if self.no_joined_notifications is None or self.no_joined_notifications is False else 1)),
+            self.serialize_bytes(self.first_name),
+            self.serialize_bytes(self.last_name),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _no_joined_notifications = bool(flags & 1)
+        _first_name = reader.tgread_string()
+        _last_name = reader.tgread_string()
+        return cls(first_name=_first_name, last_name=_last_name, no_joined_notifications=_no_joined_notifications)
+
+
 class ImportAuthorizationRequest(TLRequest):
     CONSTRUCTOR_ID = 0xa57a7dad
     SUBCLASS_OF_ID = 0xb9e04e39
@@ -403,6 +579,85 @@ class ImportWebTokenAuthorizationRequest(TLRequest):
         _api_hash = reader.tgread_string()
         _web_auth_token = reader.tgread_string()
         return cls(api_id=_api_id, api_hash=_api_hash, web_auth_token=_web_auth_token)
+
+
+class InitFirebasePnvLoginRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x644f15c0
+    SUBCLASS_OF_ID = 0xfa6422a7
+
+    def __init__(self, api_id: int, api_hash: str, except_ids: Optional[List[int]]=None):
+        """
+        :returns auth.FirebasePnvIntent: Instance of FirebasePnvIntent.
+        """
+        self.api_id = api_id
+        self.api_hash = api_hash
+        self.except_ids = except_ids
+
+    def to_dict(self):
+        return {
+            '_': 'InitFirebasePnvLoginRequest',
+            'api_id': self.api_id,
+            'api_hash': self.api_hash,
+            'except_ids': [] if self.except_ids is None else self.except_ids[:]
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xc0\x15Od',
+            struct.pack('<I', (0 if self.except_ids is None or self.except_ids is False else 1)),
+            b'' if self.except_ids is None or self.except_ids is False else b''.join((b'\x15\xc4\xb5\x1c',struct.pack('<i', len(self.except_ids)),b''.join(struct.pack('<q', x) for x in self.except_ids))),
+            struct.pack('<i', self.api_id),
+            self.serialize_bytes(self.api_hash),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        if flags & 1:
+            reader.read_int()
+            _except_ids = []
+            for _ in range(reader.read_int()):
+                _x = reader.read_long()
+                _except_ids.append(_x)
+
+        else:
+            _except_ids = None
+        _api_id = reader.read_int()
+        _api_hash = reader.tgread_string()
+        return cls(api_id=_api_id, api_hash=_api_hash, except_ids=_except_ids)
+
+
+class InitPasskeyLoginRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x518ad0b7
+    SUBCLASS_OF_ID = 0xd9793032
+
+    def __init__(self, api_id: int, api_hash: str):
+        """
+        :returns auth.PasskeyLoginOptions: Instance of PasskeyLoginOptions.
+        """
+        self.api_id = api_id
+        self.api_hash = api_hash
+
+    def to_dict(self):
+        return {
+            '_': 'InitPasskeyLoginRequest',
+            'api_id': self.api_id,
+            'api_hash': self.api_hash
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xb7\xd0\x8aQ',
+            struct.pack('<i', self.api_id),
+            self.serialize_bytes(self.api_hash),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _api_id = reader.read_int()
+        _api_hash = reader.tgread_string()
+        return cls(api_id=_api_id, api_hash=_api_hash)
 
 
 class LogOutRequest(TLRequest):

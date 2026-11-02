@@ -83,6 +83,7 @@ class EntityType(IntEnum):
     CHANNEL = ord('C')
     MEGAGROUP = ord('M')
     GIGAGROUP = ord('E')
+    COMMUNITY = ord('N')
 
     def canonical(self):
         """
@@ -98,6 +99,7 @@ _canon_entity_types = {
     EntityType.CHANNEL: EntityType.CHANNEL,
     EntityType.MEGAGROUP: EntityType.CHANNEL,
     EntityType.GIGAGROUP: EntityType.CHANNEL,
+    EntityType.COMMUNITY: EntityType.COMMUNITY,
 }
 
 

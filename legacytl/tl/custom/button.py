@@ -51,16 +51,7 @@ class Button:
         """
         Returns `True` if the button belongs to an inline keyboard.
         """
-        return isinstance(button, (
-            types.KeyboardButtonCopy,
-            types.KeyboardButtonBuy,
-            types.KeyboardButtonCallback,
-            types.KeyboardButtonGame,
-            types.KeyboardButtonSwitchInline,
-            types.KeyboardButtonUrl,
-            types.InputKeyboardButtonUrlAuth,
-            types.KeyboardButtonWebView,
-        ))
+        return isinstance(button, types.KeyboardInlineButton)
 
     @staticmethod
     def inline(text, data=None):
@@ -210,7 +201,7 @@ class Button:
         same text on their own.
         """
         return cls(
-            types.KeyboardButton(text),
+            types.KeyboardButton(text, types.ButtonTypeDefault()),
             resize=resize,
             single_use=single_use,
             selective=selective,

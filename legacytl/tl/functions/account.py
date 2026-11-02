@@ -6,7 +6,7 @@ import os
 import struct
 from datetime import datetime
 if TYPE_CHECKING:
-    from ...tl.types import TypeAccountDaysTTL, TypeAutoDownloadSettings, TypeAutoSaveSettings, TypeBaseTheme, TypeBirthday, TypeBusinessBotRights, TypeBusinessWorkHours, TypeCodeSettings, TypeEmailVerification, TypeEmailVerifyPurpose, TypeEmojiStatus, TypeGlobalPrivacySettings, TypeInputBusinessAwayMessage, TypeInputBusinessBotRecipients, TypeInputBusinessChatLink, TypeInputBusinessGreetingMessage, TypeInputBusinessIntro, TypeInputChannel, TypeInputCheckPasswordSRP, TypeInputDocument, TypeInputFile, TypeInputGeoPoint, TypeInputNotifyPeer, TypeInputPeer, TypeInputPeerNotifySettings, TypeInputPhoto, TypeInputPrivacyKey, TypeInputPrivacyRule, TypeInputSecureValue, TypeInputTheme, TypeInputThemeSettings, TypeInputUser, TypeInputWallPaper, TypeReactionsNotifySettings, TypeReportReason, TypeSecureCredentialsEncrypted, TypeSecureValueHash, TypeSecureValueType, TypeWallPaperSettings
+    from ...tl.types import TypeAccountDaysTTL, TypeAutoDownloadSettings, TypeAutoSaveSettings, TypeBaseTheme, TypeBirthday, TypeBusinessBotRights, TypeBusinessWorkHours, TypeCodeSettings, TypeEmailVerification, TypeEmailVerifyPurpose, TypeEmojiStatus, TypeGlobalPrivacySettings, TypeInputBusinessAwayMessage, TypeInputBusinessBotRecipients, TypeInputBusinessChatLink, TypeInputBusinessGreetingMessage, TypeInputBusinessIntro, TypeInputChannel, TypeInputCheckPasswordSRP, TypeInputDocument, TypeInputFile, TypeInputGeoPoint, TypeInputNotifyPeer, TypeInputPasskeyCredential, TypeInputPeer, TypeInputPeerNotifySettings, TypeInputPhoto, TypeInputPrivacyKey, TypeInputPrivacyRule, TypeInputSecureValue, TypeInputTheme, TypeInputThemeSettings, TypeInputUser, TypeInputWallPaper, TypePeerColor, TypeProfileTab, TypeReactionsNotifySettings, TypeReportReason, TypeSecureCredentialsEncrypted, TypeSecureValueHash, TypeSecureValueType, TypeWallPaperSettings
     from ...tl.types.account import TypePasswordInputSettings
 
 
@@ -58,43 +58,6 @@ class AcceptAuthorizationRequest(TLRequest):
 
         _credentials = reader.tgread_object()
         return cls(bot_id=_bot_id, scope=_scope, public_key=_public_key, value_hashes=_value_hashes, credentials=_credentials)
-
-
-class AddNoPaidMessagesExceptionRequest(TLRequest):
-    CONSTRUCTOR_ID = 0x6f688aa7
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, user_id: 'TypeInputUser', refund_charged: Optional[bool]=None):
-        """
-        :returns Bool: This type has no constructors.
-        """
-        self.user_id = user_id
-        self.refund_charged = refund_charged
-
-    async def resolve(self, client, utils):
-        self.user_id = utils.get_input_user(await client.get_input_entity(self.user_id))
-
-    def to_dict(self):
-        return {
-            '_': 'AddNoPaidMessagesExceptionRequest',
-            'user_id': self.user_id.to_dict() if isinstance(self.user_id, TLObject) else self.user_id,
-            'refund_charged': self.refund_charged
-        }
-
-    def _bytes(self):
-        return b''.join((
-            b'\xa7\x8aho',
-            struct.pack('<I', (0 if self.refund_charged is None or self.refund_charged is False else 1)),
-            self.user_id._bytes(),
-        ))
-
-    @classmethod
-    def from_reader(cls, reader):
-        flags = reader.read_int()
-
-        _refund_charged = bool(flags & 1)
-        _user_id = reader.tgread_object()
-        return cls(user_id=_user_id, refund_charged=_refund_charged)
 
 
 class CancelPasswordEmailRequest(TLRequest):
@@ -245,6 +208,37 @@ class ClearRecentEmojiStatusesRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         return cls()
+
+
+class ConfirmBotConnectionRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x67ed1f68
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, bot_id: 'TypeInputUser'):
+        """
+        :returns Bool: This type has no constructors.
+        """
+        self.bot_id = bot_id
+
+    async def resolve(self, client, utils):
+        self.bot_id = utils.get_input_user(await client.get_input_entity(self.bot_id))
+
+    def to_dict(self):
+        return {
+            '_': 'ConfirmBotConnectionRequest',
+            'bot_id': self.bot_id.to_dict() if isinstance(self.bot_id, TLObject) else self.bot_id
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'h\x1f\xedg',
+            self.bot_id._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _bot_id = reader.tgread_object()
+        return cls(bot_id=_bot_id)
 
 
 class ConfirmPasswordEmailRequest(TLRequest):
@@ -497,6 +491,34 @@ class DeleteBusinessChatLinkRequest(TLRequest):
         return cls(slug=_slug)
 
 
+class DeletePasskeyRequest(TLRequest):
+    CONSTRUCTOR_ID = 0xf5b5563f
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, id: str):
+        """
+        :returns Bool: This type has no constructors.
+        """
+        self.id = id
+
+    def to_dict(self):
+        return {
+            '_': 'DeletePasskeyRequest',
+            'id': self.id
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'?V\xb5\xf5',
+            self.serialize_bytes(self.id),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _id = reader.tgread_string()
+        return cls(id=_id)
+
+
 class DeleteSecureValueRequest(TLRequest):
     CONSTRUCTOR_ID = 0xb880bc4b
     SUBCLASS_OF_ID = 0xf5b399ac
@@ -528,6 +550,25 @@ class DeleteSecureValueRequest(TLRequest):
             _types.append(_x)
 
         return cls(types=_types)
+
+
+class DeleteWebBrowserSettingsExceptionsRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x86a0765d
+    SUBCLASS_OF_ID = 0x44799578
+
+    def to_dict(self):
+        return {
+            '_': 'DeleteWebBrowserSettingsExceptionsRequest'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b']v\xa0\x86',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
 
 
 class DisablePeerConnectedBotRequest(TLRequest):
@@ -1210,34 +1251,65 @@ class GetNotifySettingsRequest(TLRequest):
 
 
 class GetPaidMessagesRevenueRequest(TLRequest):
-    CONSTRUCTOR_ID = 0xf1266f38
+    CONSTRUCTOR_ID = 0x19ba4a67
     SUBCLASS_OF_ID = 0x152f0c57
 
-    def __init__(self, user_id: 'TypeInputUser'):
+    def __init__(self, user_id: 'TypeInputUser', parent_peer: Optional['TypeInputPeer']=None):
         """
         :returns account.PaidMessagesRevenue: Instance of PaidMessagesRevenue.
         """
         self.user_id = user_id
+        self.parent_peer = parent_peer
 
     async def resolve(self, client, utils):
         self.user_id = utils.get_input_user(await client.get_input_entity(self.user_id))
+        if self.parent_peer:
+            self.parent_peer = utils.get_input_peer(await client.get_input_entity(self.parent_peer))
 
     def to_dict(self):
         return {
             '_': 'GetPaidMessagesRevenueRequest',
-            'user_id': self.user_id.to_dict() if isinstance(self.user_id, TLObject) else self.user_id
+            'user_id': self.user_id.to_dict() if isinstance(self.user_id, TLObject) else self.user_id,
+            'parent_peer': self.parent_peer.to_dict() if isinstance(self.parent_peer, TLObject) else self.parent_peer
         }
 
     def _bytes(self):
         return b''.join((
-            b'8o&\xf1',
+            b'gJ\xba\x19',
+            struct.pack('<I', (0 if self.parent_peer is None or self.parent_peer is False else 1)),
+            b'' if self.parent_peer is None or self.parent_peer is False else (self.parent_peer._bytes()),
             self.user_id._bytes(),
         ))
 
     @classmethod
     def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        if flags & 1:
+            _parent_peer = reader.tgread_object()
+        else:
+            _parent_peer = None
         _user_id = reader.tgread_object()
-        return cls(user_id=_user_id)
+        return cls(user_id=_user_id, parent_peer=_parent_peer)
+
+
+class GetPasskeysRequest(TLRequest):
+    CONSTRUCTOR_ID = 0xea1f0c52
+    SUBCLASS_OF_ID = 0x24dd205e
+
+    def to_dict(self):
+        return {
+            '_': 'GetPasskeysRequest'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'R\x0c\x1f\xea',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
 
 
 class GetPasswordRequest(TLRequest):
@@ -1353,6 +1425,34 @@ class GetRecentEmojiStatusesRequest(TLRequest):
     def _bytes(self):
         return b''.join((
             b'\x05\x81W\x0f',
+            struct.pack('<q', self.hash),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _hash = reader.read_long()
+        return cls(hash=_hash)
+
+
+class GetSavedMusicIdsRequest(TLRequest):
+    CONSTRUCTOR_ID = 0xe09d5faf
+    SUBCLASS_OF_ID = 0x4b4af692
+
+    def __init__(self, hash: int):
+        """
+        :returns account.SavedMusicIds: Instance of either SavedMusicIdsNotModified, SavedMusicIds.
+        """
+        self.hash = hash
+
+    def to_dict(self):
+        return {
+            '_': 'GetSavedMusicIdsRequest',
+            'hash': self.hash
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xaf_\x9d\xe0',
             struct.pack('<q', self.hash),
         ))
 
@@ -1519,6 +1619,42 @@ class GetTmpPasswordRequest(TLRequest):
         return cls(password=_password, period=_period)
 
 
+class GetUniqueGiftChatThemesRequest(TLRequest):
+    CONSTRUCTOR_ID = 0xe42ce9c9
+    SUBCLASS_OF_ID = 0x15c14aa8
+
+    def __init__(self, offset: str, limit: int, hash: int):
+        """
+        :returns account.ChatThemes: Instance of either ChatThemesNotModified, ChatThemes.
+        """
+        self.offset = offset
+        self.limit = limit
+        self.hash = hash
+
+    def to_dict(self):
+        return {
+            '_': 'GetUniqueGiftChatThemesRequest',
+            'offset': self.offset,
+            'limit': self.limit,
+            'hash': self.hash
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xc9\xe9,\xe4',
+            self.serialize_bytes(self.offset),
+            struct.pack('<i', self.limit),
+            struct.pack('<q', self.hash),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _offset = reader.tgread_string()
+        _limit = reader.read_int()
+        _hash = reader.read_long()
+        return cls(offset=_offset, limit=_limit, hash=_hash)
+
+
 class GetWallPaperRequest(TLRequest):
     CONSTRUCTOR_ID = 0xfc8ddbea
     SUBCLASS_OF_ID = 0x96a2c98b
@@ -1587,6 +1723,53 @@ class GetWebAuthorizationsRequest(TLRequest):
     def _bytes(self):
         return b''.join((
             b'om.\x18',
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
+
+
+class GetWebBrowserSettingsRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x56655768
+    SUBCLASS_OF_ID = 0x44799578
+
+    def __init__(self, hash: int):
+        """
+        :returns account.WebBrowserSettings: Instance of either WebBrowserSettingsNotModified, WebBrowserSettings.
+        """
+        self.hash = hash
+
+    def to_dict(self):
+        return {
+            '_': 'GetWebBrowserSettingsRequest',
+            'hash': self.hash
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'hWeV',
+            struct.pack('<q', self.hash),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _hash = reader.read_long()
+        return cls(hash=_hash)
+
+
+class InitPasskeyRegistrationRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x429547e8
+    SUBCLASS_OF_ID = 0x341d83e4
+
+    def to_dict(self):
+        return {
+            '_': 'InitPasskeyRegistrationRequest'
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xe8G\x95B',
         ))
 
     @classmethod
@@ -1816,6 +1999,34 @@ class RegisterDeviceRequest(TLRequest):
             _other_uids.append(_x)
 
         return cls(token_type=_token_type, token=_token, app_sandbox=_app_sandbox, secret=_secret, other_uids=_other_uids, no_muted=_no_muted)
+
+
+class RegisterPasskeyRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x55b41fd6
+    SUBCLASS_OF_ID = 0xcf380de0
+
+    def __init__(self, credential: 'TypeInputPasskeyCredential'):
+        """
+        :returns Passkey: Instance of Passkey.
+        """
+        self.credential = credential
+
+    def to_dict(self):
+        return {
+            '_': 'RegisterPasskeyRequest',
+            'credential': self.credential.to_dict() if isinstance(self.credential, TLObject) else self.credential
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xd6\x1f\xb4U',
+            self.credential._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _credential = reader.tgread_object()
+        return cls(credential=_credential)
 
 
 class ReorderUsernamesRequest(TLRequest):
@@ -2199,6 +2410,52 @@ class SaveAutoSaveSettingsRequest(TLRequest):
             _peer = None
         _settings = reader.tgread_object()
         return cls(settings=_settings, users=_users, chats=_chats, broadcasts=_broadcasts, peer=_peer)
+
+
+class SaveMusicRequest(TLRequest):
+    CONSTRUCTOR_ID = 0xb26732a9
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, id: 'TypeInputDocument', unsave: Optional[bool]=None, after_id: Optional['TypeInputDocument']=None):
+        """
+        :returns Bool: This type has no constructors.
+        """
+        self.id = id
+        self.unsave = unsave
+        self.after_id = after_id
+
+    async def resolve(self, client, utils):
+        self.id = utils.get_input_document(self.id)
+        if self.after_id:
+            self.after_id = utils.get_input_document(self.after_id)
+
+    def to_dict(self):
+        return {
+            '_': 'SaveMusicRequest',
+            'id': self.id.to_dict() if isinstance(self.id, TLObject) else self.id,
+            'unsave': self.unsave,
+            'after_id': self.after_id.to_dict() if isinstance(self.after_id, TLObject) else self.after_id
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xa92g\xb2',
+            struct.pack('<I', (0 if self.unsave is None or self.unsave is False else 1) | (0 if self.after_id is None or self.after_id is False else 2)),
+            self.id._bytes(),
+            b'' if self.after_id is None or self.after_id is False else (self.after_id._bytes()),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _unsave = bool(flags & 1)
+        _id = reader.tgread_object()
+        if flags & 2:
+            _after_id = reader.tgread_object()
+        else:
+            _after_id = None
+        return cls(id=_id, unsave=_unsave, after_id=_after_id)
 
 
 class SaveRingtoneRequest(TLRequest):
@@ -2606,6 +2863,34 @@ class SetGlobalPrivacySettingsRequest(TLRequest):
         return cls(settings=_settings)
 
 
+class SetMainProfileTabRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x5dee78b0
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, tab: 'TypeProfileTab'):
+        """
+        :returns Bool: This type has no constructors.
+        """
+        self.tab = tab
+
+    def to_dict(self):
+        return {
+            '_': 'SetMainProfileTabRequest',
+            'tab': self.tab.to_dict() if isinstance(self.tab, TLObject) else self.tab
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xb0x\xee]',
+            self.tab._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        _tab = reader.tgread_object()
+        return cls(tab=_tab)
+
+
 class SetPrivacyRequest(TLRequest):
     CONSTRUCTOR_ID = 0xc9f81ce8
     SUBCLASS_OF_ID = 0xb55aba82
@@ -2706,6 +2991,55 @@ class ToggleConnectedBotPausedRequest(TLRequest):
         return cls(peer=_peer, paused=_paused)
 
 
+class ToggleNoPaidMessagesExceptionRequest(TLRequest):
+    CONSTRUCTOR_ID = 0xfe2eda76
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, user_id: 'TypeInputUser', refund_charged: Optional[bool]=None, require_payment: Optional[bool]=None, parent_peer: Optional['TypeInputPeer']=None):
+        """
+        :returns Bool: This type has no constructors.
+        """
+        self.user_id = user_id
+        self.refund_charged = refund_charged
+        self.require_payment = require_payment
+        self.parent_peer = parent_peer
+
+    async def resolve(self, client, utils):
+        self.user_id = utils.get_input_user(await client.get_input_entity(self.user_id))
+        if self.parent_peer:
+            self.parent_peer = utils.get_input_peer(await client.get_input_entity(self.parent_peer))
+
+    def to_dict(self):
+        return {
+            '_': 'ToggleNoPaidMessagesExceptionRequest',
+            'user_id': self.user_id.to_dict() if isinstance(self.user_id, TLObject) else self.user_id,
+            'refund_charged': self.refund_charged,
+            'require_payment': self.require_payment,
+            'parent_peer': self.parent_peer.to_dict() if isinstance(self.parent_peer, TLObject) else self.parent_peer
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'v\xda.\xfe',
+            struct.pack('<I', (0 if self.refund_charged is None or self.refund_charged is False else 1) | (0 if self.require_payment is None or self.require_payment is False else 4) | (0 if self.parent_peer is None or self.parent_peer is False else 2)),
+            b'' if self.parent_peer is None or self.parent_peer is False else (self.parent_peer._bytes()),
+            self.user_id._bytes(),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _refund_charged = bool(flags & 1)
+        _require_payment = bool(flags & 4)
+        if flags & 2:
+            _parent_peer = reader.tgread_object()
+        else:
+            _parent_peer = None
+        _user_id = reader.tgread_object()
+        return cls(user_id=_user_id, refund_charged=_refund_charged, require_payment=_require_payment, parent_peer=_parent_peer)
+
+
 class ToggleSponsoredMessagesRequest(TLRequest):
     CONSTRUCTOR_ID = 0xb9d9a38d
     SUBCLASS_OF_ID = 0xf5b399ac
@@ -2764,6 +3098,47 @@ class ToggleUsernameRequest(TLRequest):
         _username = reader.tgread_string()
         _active = reader.tgread_bool()
         return cls(username=_username, active=_active)
+
+
+class ToggleWebBrowserSettingsExceptionRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x60ed4229
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, url: str, delete: Optional[bool]=None, open_external_browser: Optional[bool]=None):
+        """
+        :returns Updates: Instance of either UpdatesTooLong, UpdateShortMessage, UpdateShortChatMessage, UpdateShort, UpdatesCombined, Updates, UpdateShortSentMessage.
+        """
+        self.url = url
+        self.delete = delete
+        self.open_external_browser = open_external_browser
+
+    def to_dict(self):
+        return {
+            '_': 'ToggleWebBrowserSettingsExceptionRequest',
+            'url': self.url,
+            'delete': self.delete,
+            'open_external_browser': self.open_external_browser
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b')B\xed`',
+            struct.pack('<I', (0 if self.delete is None or self.delete is False else 2) | (0 if self.open_external_browser is None else 1)),
+            b'' if self.open_external_browser is None else (b'\xb5ur\x99' if self.open_external_browser else b'7\x97y\xbc'),
+            self.serialize_bytes(self.url),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _delete = bool(flags & 2)
+        if flags & 1:
+            _open_external_browser = reader.tgread_bool()
+        else:
+            _open_external_browser = None
+        _url = reader.tgread_string()
+        return cls(url=_url, delete=_delete, open_external_browser=_open_external_browser)
 
 
 class UnregisterDeviceRequest(TLRequest):
@@ -3019,31 +3394,28 @@ class UpdateBusinessWorkHoursRequest(TLRequest):
 
 
 class UpdateColorRequest(TLRequest):
-    CONSTRUCTOR_ID = 0x7cefa15d
+    CONSTRUCTOR_ID = 0x684d214e
     SUBCLASS_OF_ID = 0xf5b399ac
 
-    def __init__(self, for_profile: Optional[bool]=None, color: Optional[int]=None, background_emoji_id: Optional[int]=None):
+    def __init__(self, for_profile: Optional[bool]=None, color: Optional['TypePeerColor']=None):
         """
         :returns Bool: This type has no constructors.
         """
         self.for_profile = for_profile
         self.color = color
-        self.background_emoji_id = background_emoji_id
 
     def to_dict(self):
         return {
             '_': 'UpdateColorRequest',
             'for_profile': self.for_profile,
-            'color': self.color,
-            'background_emoji_id': self.background_emoji_id
+            'color': self.color.to_dict() if isinstance(self.color, TLObject) else self.color
         }
 
     def _bytes(self):
         return b''.join((
-            b']\xa1\xef|',
-            struct.pack('<I', (0 if self.for_profile is None or self.for_profile is False else 2) | (0 if self.color is None or self.color is False else 4) | (0 if self.background_emoji_id is None or self.background_emoji_id is False else 1)),
-            b'' if self.color is None or self.color is False else (struct.pack('<i', self.color)),
-            b'' if self.background_emoji_id is None or self.background_emoji_id is False else (struct.pack('<q', self.background_emoji_id)),
+            b'N!Mh',
+            struct.pack('<I', (0 if self.for_profile is None or self.for_profile is False else 2) | (0 if self.color is None or self.color is False else 4)),
+            b'' if self.color is None or self.color is False else (self.color._bytes()),
         ))
 
     @classmethod
@@ -3052,14 +3424,10 @@ class UpdateColorRequest(TLRequest):
 
         _for_profile = bool(flags & 2)
         if flags & 4:
-            _color = reader.read_int()
+            _color = reader.tgread_object()
         else:
             _color = None
-        if flags & 1:
-            _background_emoji_id = reader.read_long()
-        else:
-            _background_emoji_id = None
-        return cls(for_profile=_for_profile, color=_color, background_emoji_id=_background_emoji_id)
+        return cls(for_profile=_for_profile, color=_color)
 
 
 class UpdateConnectedBotRequest(TLRequest):
@@ -3438,6 +3806,39 @@ class UpdateUsernameRequest(TLRequest):
     def from_reader(cls, reader):
         _username = reader.tgread_string()
         return cls(username=_username)
+
+
+class UpdateWebBrowserSettingsRequest(TLRequest):
+    CONSTRUCTOR_ID = 0x9adf82fe
+    SUBCLASS_OF_ID = 0x44799578
+
+    def __init__(self, open_external_browser: Optional[bool]=None, display_close_button: Optional[bool]=None):
+        """
+        :returns account.WebBrowserSettings: Instance of either WebBrowserSettingsNotModified, WebBrowserSettings.
+        """
+        self.open_external_browser = open_external_browser
+        self.display_close_button = display_close_button
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateWebBrowserSettingsRequest',
+            'open_external_browser': self.open_external_browser,
+            'display_close_button': self.display_close_button
+        }
+
+    def _bytes(self):
+        return b''.join((
+            b'\xfe\x82\xdf\x9a',
+            struct.pack('<I', (0 if self.open_external_browser is None or self.open_external_browser is False else 1) | (0 if self.display_close_button is None or self.display_close_button is False else 2)),
+        ))
+
+    @classmethod
+    def from_reader(cls, reader):
+        flags = reader.read_int()
+
+        _open_external_browser = bool(flags & 1)
+        _display_close_button = bool(flags & 2)
+        return cls(open_external_browser=_open_external_browser, display_close_button=_display_close_button)
 
 
 class UploadRingtoneRequest(TLRequest):

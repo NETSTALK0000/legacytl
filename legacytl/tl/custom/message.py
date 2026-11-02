@@ -220,10 +220,16 @@ class Message(ChatGetter, SenderGetter, TLObject):
         report_delivery_until_date: Optional[datetime] = None,
         paid_message_stars: Optional[int] = None,
         suggested_post=None,
+        from_rank: Optional[str] = None,
+        guestchat_via_from: Optional[types.TypePeer] = None,
+        schedule_repeat_period: Optional[int] = None,
+        summary_from_language: Optional[str] = None,
+        rich_message: Optional['types.TypeRichMessage'] = None,
         # Copied from MessageService.__init__ signature
         action: Optional[types.TypeMessageAction] = None,
         reactions_are_possible: Optional[bool] = None,
     ):
+        self.rich_message = rich_message
         # Copied from Message.__init__ body
         self.id = id
         self.peer_id = peer_id
@@ -269,6 +275,10 @@ class Message(ChatGetter, SenderGetter, TLObject):
         self.report_delivery_until_date = report_delivery_until_date
         self.paid_message_stars = paid_message_stars
         self.suggested_post = suggested_post
+        self.from_rank = from_rank
+        self.guestchat_via_from = guestchat_via_from
+        self.schedule_repeat_period = schedule_repeat_period
+        self.summary_from_language = summary_from_language
         # Copied from MessageService.__init__ body
         self.action = action
         self.reactions_are_possible = reactions_are_possible
