@@ -237,7 +237,7 @@ def main(argv):
         if not version:
             from legacytl import __version__ as version
         setup(
-            name="Legacy-TL-New",
+            name="Legacy-TL-Fork",
             version=version,
             description="Full-featured Telegram client library for Python 3",
             long_description=long_description,
